@@ -1,0 +1,16 @@
+.first-block{
+    background-image: url('../assets/images/backgrounds/main_page.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    height: 500px;
+    color: var(--primary-50);
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    align-items: center;
+    justify-content: center;
+    padding-top: 50px;
+}
