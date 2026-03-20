@@ -3,6 +3,8 @@ import './styles/global.css'
 import './styles/main_page.css'
 import Card from './components/cards/Card'
 import Header from './components/header/Header'
+import MenuCard from './components/cards/MenuCard'
+import Cardsbar from './components/cards/CardsBar'
 
 function App() {
   return (
@@ -12,6 +14,7 @@ function App() {
         <h1>Стары Менск</h1>
         <p>Место с историей</p>
       </div>
+      <Cardsbar/>
       <Card 
         image="https://starymensk.by/wp-content/uploads/2022/09/0287-2048x1366.jpg"
         title="Банкетные залы"

@@ -16,6 +16,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    scrollbar-width: none;
 }
 
 html {
@@ -33,6 +34,16 @@ body {
     font-size: 16px;
     text-box: trim-both cap alphabetic;
     padding: 0 100px;
+}
+
+::-webkit-scrollbar {
+    width: 0;
+    background: transparent;
+}
+
+a {
+    color: var(--primary-600);
+    text-decoration: none;
 }
 
 h1, h2, h3, h4, h5, h6 {

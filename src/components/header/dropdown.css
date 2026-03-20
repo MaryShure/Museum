@@ -1,0 +1,46 @@
+.dropdown-menu {
+    position: absolute;
+    top: calc(100% + 20px);  /* 20px ниже header */
+    left: 0;
+    width: 1180px;
+    background-color: white;
+    border-radius: 20px 20px 40px 40px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    z-index: 1000;
+    padding: 40px;
+}
+
+.dropdown-open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dropdown-content {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);  /* 5 карточек в ряд */
+    gap: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+@media (max-width: 1200px) {
+    .dropdown-content {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 900px) {
+    .dropdown-content {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .dropdown-content {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
