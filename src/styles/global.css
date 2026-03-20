@@ -34,7 +34,6 @@ body {
     font-size: 16px;
     text-box: trim-both cap alphabetic;
     padding: 0 100px;
-    overflow: hidden;
 }
 
 ::-webkit-scrollbar {
@@ -72,8 +71,7 @@ h4 {
 
 @media (max-width: 1024px) {
     body {
-        padding: 0 6px;
-        overflow: hidden;
+        padding: 0 60px;
     }
 }
 
@@ -81,6 +79,5 @@ h4 {
     body {
         font-size: 12px;
         padding: 0 20px;
-        overflow: hidden;
     }
 }
