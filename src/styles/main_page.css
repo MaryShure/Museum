@@ -15,3 +15,9 @@
     justify-content: center;
     padding-top: 50px;
 }
+
+@media (max-width: 1024px) {
+    .first-block{
+        height: 300px;
+    }
+}

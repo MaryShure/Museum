@@ -92,3 +92,20 @@ hr {
     justify-content: center;
     align-items: center;
 }
+
+@media (max-width: 1024px) {
+    .cards-bar{
+        width: 100%;
+        margin: 20px auto;
+        gap: 16px;
+        overflow: hidden;
+    }
+}
+
+@media (max-width: 768px) {
+    .cards-bar{
+        width: 100%;
+        margin: 16px auto;
+        gap: 12px;
+    }
+}
