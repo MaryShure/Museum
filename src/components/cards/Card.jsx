@@ -9,8 +9,7 @@ const Card = ({
   altText = "Изображение товара" 
 }) => {
   return (
-    <a href={linkUrl}>
-      <div className="card">
+    <a href={linkUrl} className="card">
         {image && (
           <div className="card-image">
             <img src={image} alt={altText} />
@@ -27,7 +26,6 @@ const Card = ({
           )}
         
         </div>
-      </div>
     </a>
   );
 };

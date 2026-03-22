@@ -5,6 +5,7 @@ import Card from './components/cards/Card'
 import Header from './components/header/Header'
 import MenuCard from './components/cards/MenuCard'
 import Cardsbar from './components/cards/CardsBar'
+import Footer from './components/footer/Footer'
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         description="Это краткое описание товара. Здесь может быть несколько предложений о характеристиках и преимуществах."
         linkUrl="/product/1"
       />
+      <Footer/>
     </>
   )
 }
