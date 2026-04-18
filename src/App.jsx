@@ -6,6 +6,7 @@ import Header from './components/header/Header'
 import MenuCard from './components/cards/MenuCard'
 import Cardsbar from './components/cards/CardsBar'
 import Footer from './components/footer/Footer'
+import SecondaryButton from './components/buttons/SecondaryButton'
 
 function App() {
   return (
@@ -22,6 +23,8 @@ function App() {
         description="Это краткое описание товара. Здесь может быть несколько предложений о характеристиках и преимуществах."
         linkUrl="/product/1"
       />
+
+      <SecondaryButton text="Button"/>
       <Footer/>
     </>
   )

@@ -41,6 +41,11 @@ body {
     background: transparent;
 }
 
+::selection {
+    background-color: var(--primary-300);
+    color: var(--primary-50);
+}
+
 a {
     color: var(--primary-600);
     text-decoration: none;
@@ -77,7 +82,7 @@ h4 {
 
 @media (max-width: 768px) {
     body {
-        font-size: 12px;
-        padding: 0 20px;
+        font-size: 16px;
+        padding: 0 12px;
     }
 }

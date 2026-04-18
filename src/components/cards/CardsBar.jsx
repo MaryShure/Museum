@@ -26,7 +26,12 @@ const Cardsbar = () => {
               image="https://starymensk.by/wp-content/uploads/2022/09/0287-2048x1366.jpg"
               linkUrl="/banquet"
             />
-            <PrimaryButton icon={<ArrowRight/>} linkUrl="/"/>
+            <div className="cards-bar-button">
+              <PrimaryButton
+                icon={<ArrowRight />}
+                linkUrl="/services"
+              />
+            </div>
         </div>
     );
 }
