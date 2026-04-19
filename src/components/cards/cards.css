@@ -44,6 +44,45 @@ hr {
     gap: 16px;
 }
 
+.card-mini {
+    width: 400px;
+    height: 180px;
+    display: flex;
+    gap: 20px;
+    background-color: white;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px 0 rgba(226, 180, 128, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-mini:hover {
+    transform: translateY(-12px);
+    box-shadow: 0 4px 20px 0 rgba(226, 180, 128, 0.3);
+    .card-title{
+        color: var(--primary-300);
+    }
+}
+
+.card-mini-image {
+    min-width: 180px;
+    height: 100%;
+    overflow: hidden;
+    border-radius: 20px;
+}
+
+.card-mini-image img {
+    width: 180px;
+    height: 100%;
+    object-fit: cover;
+}
+
+.card-mini-content {
+    padding: 16px 12px 16px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
 .menu-card{
     height: 232px;
     width: 200px;
