@@ -7,6 +7,7 @@ import MenuCard from './components/cards/MenuCard'
 import Cardsbar from './components/cards/CardsBar'
 import Footer from './components/footer/Footer'
 import SecondaryButton from './components/buttons/SecondaryButton'
+import Map from './components/map/Map'
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
       />
 
       <SecondaryButton text="Button"/>
+      <Map/>
       <Footer/>
     </>
   )

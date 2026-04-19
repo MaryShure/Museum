@@ -194,7 +194,7 @@
 .mobile-menu-nav .menu-button,
 .mobile-menu-nav .primary-button,
 .mobile-menu-nav .secondary-button {
-    width: 100%;
+    width: fit-content;
     min-height: 56px;
     justify-content: center;
     font-size: 18px;
@@ -206,7 +206,7 @@
     align-items: center;
     justify-content: center;
     gap: 24px;
-    color: var(--primary-600);
+    color: var(--primary-300);
     padding-top: 24px;
 }
 

@@ -10,6 +10,7 @@
     grid-template-columns: repeat(5, 1fr);
     gap: 24px;
     padding: 100px;
+    margin-top: 100px;
 }
 
 .footer a {
@@ -75,6 +76,7 @@
         padding: 60px 40px;
         height: auto;
         gap: 32px;
+        margin-top: 80px;
     }
     
     /* Последняя колонка (соцсети) объединяется с первой */
