@@ -14,6 +14,10 @@
     padding: 0 20px;
 }
 
+.header > *:not(:last-child){    
+    box-shadow: 0 4px 20px rgba(208, 199, 190, 0.25);
+}
+
 .header::after {
     content: "";
     position: fixed;
