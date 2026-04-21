@@ -11,6 +11,7 @@ import CardMini from './components/cards/CardMini'
 import CardWithText from './components/cards/CardWithText'
 import CardNoHover from './components/cards/CardNoHover'
 import BigCard from './components/cards/BigCard'
+import TextBlock from './components/cards/TextBlock'
 
 function App() {
   return (
@@ -53,6 +54,13 @@ function App() {
         buttonType="primary"
         buttonText="Подробнее"
         linkUrl="/product/1"
+      />
+      <TextBlock
+        items={[
+          { title: 'Адрес'},
+          { title: 'Время работы', description: 'Это краткое описание товара. Здесь может быть несколько предложений о характеристиках и преимуществах.' },
+          { title: 'Телефон', description: 'Это краткое описание товара. Здесь может быть несколько предложений о характеристиках и преимуществах.' },
+        ]}
       />
 
       <SecondaryButton text="Button"/>
