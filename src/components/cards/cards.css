@@ -237,6 +237,31 @@ hr {
   min-height: 40px;
 }
 
+.start-text{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    padding-bottom: 40px;
+    h1{
+        color: var(--primary-500);
+    }
+}
+
+.start-text > *:first-child {
+    width: 100%;
+    display: flex;
+    align-items: end;
+}
+
+.start-text > *:first-child > *{
+    max-width: 360px;
+}
+
+.start-text > *:first-child > *:first-child {
+    margin-right: auto;
+}
+
 @media (max-width: 1024px) {
     .cards-bar {
         width: 100%;
@@ -289,4 +314,20 @@ hr {
         height: 2px;
         min-height: 2px;
     }
+
+    .start-text{
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        padding-bottom: 20px;
+    }
+
+    .start-text > *:first-child {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        align-items: start;
+    }
+
 }

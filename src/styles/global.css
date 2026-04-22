@@ -37,6 +37,14 @@ body {
     margin: 0 auto;
 }
 
+.image {
+    border-radius: 40px;
+}
+
+.main-content > *{
+    margin-bottom: 100px;
+}
+
 ::-webkit-scrollbar {
     width: 0;
     background: transparent;
@@ -85,5 +93,9 @@ h4 {
     body {
         font-size: 16px;
         padding: 0 12px;
+    }
+
+    .main-content > *{
+        margin-bottom: 80px;
     }
 }
