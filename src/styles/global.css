@@ -60,6 +60,10 @@ a {
     text-decoration: none;
 }
 
+p {
+    white-space: pre-line;
+}
+
 h1, h2, h3, h4, h5, h6 {
     font-family: 'Noto Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-weight: 600;

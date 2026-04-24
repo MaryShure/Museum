@@ -13,6 +13,7 @@ import CardNoHover from './components/cards/CardNoHover'
 import BigCard from './components/cards/BigCard'
 import TextBlock from './components/cards/TextBlock'
 import StartText from './components/cards/StartText'
+import PrimaryButton from './components/buttons/PrimaryButton'
 
 function App() {
   return (
@@ -70,6 +71,66 @@ function App() {
           </div>
         </div>
 
+        <div >
+          <StartText 
+            title='Наши возможности'
+          />
+          <div className='inner-block-grid'>
+          <CardWithText 
+              title="Размещение"
+              description="Уютный ночлег для больших компаний и семей."
+              buttonType='secondary'
+              buttonText='Подробнее'
+            />
+            <CardWithText 
+              title="Отдых"
+              description="Княжеская баня. Беседка. Зона с грилем."
+            />         
+          <img
+            className="block-two-item block-two-img block-two-img-3"
+            src="https://starymensk.by/wp-content/uploads/2020/09/IMG_5223_%D0%BD%D0%BE%D0%B2%D1%8B%D0%B9-%D1%80%D0%B0%D0%B7%D0%BC%D0%B5%D1%80.jpg"
+            alt="Банкетный зал Стары Менск"
+            loading="lazy"
+          />
+          <img
+            className="block-four-img-2 image"
+            src="https://starymensk.by/wp-content/uploads/2020/09/IMG_5223_%D0%BD%D0%BE%D0%B2%D1%8B%D0%B9-%D1%80%D0%B0%D0%B7%D0%BC%D0%B5%D1%80.jpg"
+            alt="Банкетный зал Стары Менск"
+            loading="lazy"
+          />
+          <CardWithText 
+              title="Залы"
+              description="Малый зал        14 мест,\n Средний зал      20 мест, Большой зал      75 мест"
+              buttonType='secondary'
+              buttonText='Подробнее'
+            />  
+          </div> 
+          <Cardsbar/> 
+        </div>
+        <TextBlock 
+          items={[
+            { title: 'Признание и награды' },
+            { title: '2021', description: 'Почетная грамота за вклад в развитие агроэкотуризма Минской области.' },
+            { title: '2023', description: 'Лучшая историко-культурная дестинация года по версии профильных союзов.' },
+          ]}
+        />
+        <div className='block-six'>
+          <div className='block-six-text'>
+            <h2>Последние новости и события</h2>
+            <p>Экспазіцыя +замчышча + шыкоўны стол + анімацыя + вядоўца + жывая музыка +начлег</p>
+            <PrimaryButton text='Узнать все'/>
+          </div>
+          <Card 
+            image="https://starymensk.by/wp-content/uploads/2020/09/IMG_5223_%D0%BD%D0%BE%D0%B2%D1%8B%D0%B9-%D1%80%D0%B0%D0%B7%D0%BC%D0%B5%D1%80.jpg"
+            title="Раскопкі-2024"
+            description="Наведванне экспазіцыі Стары Менск і Старое Гарадзішча, агляд Менскага замчышча Х ст."
+          />
+          <Card 
+            image="https://starymensk.by/wp-content/uploads/2020/09/IMG_5223_%D0%BD%D0%BE%D0%B2%D1%8B%D0%B9-%D1%80%D0%B0%D0%B7%D0%BC%D0%B5%D1%80.jpg"
+            title="Раскопкі-2024"
+            description="Наведванне экспазіцыі Стары Менск і Старое Гарадзішча, агляд Менскага замчышча Х ст."
+          />
+        </div>
       </div>
       
       <Map/>
