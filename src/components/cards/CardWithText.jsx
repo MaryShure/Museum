@@ -6,9 +6,13 @@ import SecondaryButton from '../buttons/SecondaryButton';
 const CardWithText = ({ 
   title, 
   description, 
-  buttonType,      // 'primary' | 'secondary' | undefined
+  buttonType,
   buttonText,
   linkUrl,
+  width,
+  maxWidth,
+  minHeight,
+  height,
 }) => {
   const renderButton = () => {
     if (buttonType === 'primary') {
@@ -22,8 +26,15 @@ const CardWithText = ({
     return null;
   };
 
+  const style = {
+    width: width,
+    maxWidth: maxWidth,
+    minHeight: minHeight,
+    height: height,
+  };
+
   return (
-    <div className="card-with-text">
+    <div className="card-with-text" style={style}>
       <div className="card-with-text-content">
         {title && <h3>{title}</h3>}
 
