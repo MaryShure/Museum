@@ -35,13 +35,11 @@ const Header = () => {
           isDropdownOpen ? "has-dropdown-open" : ""
         } ${isMobileMenuOpen ? "mobile-open" : ""}`}
       >
-        <Link to="/" className="home-icon">
-          {
-            <img
-              src="https://starymensk.by/wp-content/uploads/2023/10/2.png"
-              alt="Логотип"
-            />
-          }
+        <Link to="Museum/" className="home-icon">
+          <img
+            src="https://starymensk.by/wp-content/uploads/2023/10/2.png"
+            alt="Логотип"
+          />
         </Link>
 
         <div className="buttons-bar desktop-menu">
