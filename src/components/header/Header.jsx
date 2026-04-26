@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import MenuButton from "../buttons/MenuButton";
 import DotIcon from "../../assets/icons/DotIcon";
 import InstagramIcon from "../../assets/icons/InstagramIcon";
@@ -34,12 +35,14 @@ const Header = () => {
           isDropdownOpen ? "has-dropdown-open" : ""
         } ${isMobileMenuOpen ? "mobile-open" : ""}`}
       >
-        <a href="/" className="home-icon" aria-label="На главную">
-          <img
-            src="https://starymensk.by/wp-content/uploads/2023/10/2.png"
-            alt="Логотип"
-          />
-        </a>
+        <Link to="/" className="home-icon">
+          {
+            <img
+              src="https://starymensk.by/wp-content/uploads/2023/10/2.png"
+              alt="Логотип"
+            />
+          }
+        </Link>
 
         <div className="buttons-bar desktop-menu">
           <div

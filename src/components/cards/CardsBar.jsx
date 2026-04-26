@@ -4,36 +4,33 @@ import PrimaryButton from "../buttons/PrimaryButton";
 import ArrowRight from "../../assets/icons/ArrowRight";
 
 const Cardsbar = () => {
-    return(
-        <div className="cards-bar">
-            <MenuCard 
-            text="Экскурсии"
-            image="https://starymensk.by/wp-content/uploads/2022/09/0287-2048x1366.jpg"
-            linkUrl="/banquet"
-            />
-            <MenuCard 
-              text="Экскурсии"
-              image="https://starymensk.by/wp-content/uploads/2022/09/0287-2048x1366.jpg"
-              linkUrl="/banquet"
-            />
-            <MenuCard 
-              text="Экскурсии"
-              image="https://starymensk.by/wp-content/uploads/2022/09/0287-2048x1366.jpg"
-              linkUrl="/banquet"
-            />
-            <MenuCard 
-              text="Экскурсии"
-              image="https://starymensk.by/wp-content/uploads/2022/09/0287-2048x1366.jpg"
-              linkUrl="/banquet"
-            />
-            <div className="cards-bar-button">
-              <PrimaryButton
-                icon={<ArrowRight />}
-                linkUrl="/services"
-              />
-            </div>
-        </div>
-    );
-}
+  return (
+    <div className="cards-bar">
+      <MenuCard
+        text="Экскурсии"
+        image="https://starymensk.by/wp-content/uploads/2022/09/0287-2048x1366.jpg"
+        linkUrl="/timeprice"
+      />
+      <MenuCard
+        text="Экскурсии"
+        image="https://starymensk.by/wp-content/uploads/2022/09/0287-2048x1366.jpg"
+        linkUrl="/banquet"
+      />
+      <MenuCard
+        text="Экскурсии"
+        image="https://starymensk.by/wp-content/uploads/2022/09/0287-2048x1366.jpg"
+        linkUrl="/banquet"
+      />
+      <MenuCard
+        text="Экскурсии"
+        image="https://starymensk.by/wp-content/uploads/2022/09/0287-2048x1366.jpg"
+        linkUrl="/banquet"
+      />
+      <div className="cards-bar-button">
+        <PrimaryButton icon={<ArrowRight />} linkUrl="/services" />
+      </div>
+    </div>
+  );
+};
 
 export default Cardsbar;

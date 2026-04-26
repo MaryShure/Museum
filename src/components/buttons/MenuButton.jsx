@@ -8,7 +8,6 @@ const MenuButton = ({
   linkUrl,
   iconPosition = "right",
   onClick,
-  type = "button",
 }) => {
   // Функция для рендера иконки
   const renderIcon = () => {
@@ -27,34 +26,20 @@ const MenuButton = ({
     return null;
   };
 
-  const content = (
-    <>
-      {iconPosition === "left" && renderIcon()}
-      {text && <span>{text}</span>}
-      {iconPosition === "right" && renderIcon()}
-    </>
-  );
-
-  if (linkUrl) {
-    return (
-      <Link
-        to={linkUrl}
-        className={`menu-button ${!text ? "menu-button-icon-only" : ""}`}
-        onClick={onClick}
-      >
-        {content}
-      </Link>
-    );
-  }
-
   return (
-    <button
-      type={type}
+    <Link
+      to={linkUrl}
       className={`menu-button ${!text ? "menu-button-icon-only" : ""}`}
       onClick={onClick}
     >
-      {content}
-    </button>
+      {
+        <>
+          {iconPosition === "left" && renderIcon()}
+          {text && <span>{text}</span>}
+          {iconPosition === "right" && renderIcon()}
+        </>
+      }
+    </Link>
   );
 };
 

@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import "./buttons.css";
 
 const SecondaryButton = ({
@@ -6,7 +7,7 @@ const SecondaryButton = ({
   text,
   linkUrl = "#",
   iconPosition = "right",
-  onClick
+  onClick,
 }) => {
   const renderIcon = () => {
     if (!icon) return null;
@@ -23,15 +24,19 @@ const SecondaryButton = ({
   };
 
   return (
-    <a
+    <Link
       href={linkUrl}
       className={`secondary-button ${!text ? "secondary-button-icon-only" : ""}`}
       onClick={onClick}
     >
-      {iconPosition === "left" && renderIcon()}
-      {text && <span className="secondary-button-text">{text}</span>}
-      {iconPosition === "right" && renderIcon()}
-    </a>
+      {
+        <>
+          {iconPosition === "left" && renderIcon()}
+          {text && <span className="secondary-button-text">{text}</span>}
+          {iconPosition === "right" && renderIcon()}
+        </>
+      }
+    </Link>
   );
 };
 
