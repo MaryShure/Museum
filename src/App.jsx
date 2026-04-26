@@ -1,5 +1,5 @@
 import { HashRouter, Routes, Route } from "react-router-dom";
-import ScrollToTop from "./components/ScrollToTop";
+import ScrollToTop from "./pages/ScrollToTop";
 
 import Header from "./components/header/Header";
 import Footer from "./components/footer/Footer";
