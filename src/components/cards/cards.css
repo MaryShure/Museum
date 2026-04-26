@@ -234,14 +234,14 @@ hr {
   max-width: 328px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 20px;
 }
 
 .text-block-group-divider {
   border: none;
   width: 2px;
   height: 100%;
-  min-height: 40px;
+  min-height: 80px;
 }
 
 .start-text {
