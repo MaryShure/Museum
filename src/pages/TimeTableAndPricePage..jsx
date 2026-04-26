@@ -16,8 +16,30 @@ import PrimaryButton from "../components/buttons/PrimaryButton";
 const TimeTableAndPricePage = () => {
   return (
     <>
-      <div className="first-block">
-        <h1>Услуги</h1>
+      <div className="main-content">
+        <div>
+          <StartText title="Графік працы" />
+          <TextBlock
+            items={[
+              {
+                title: "Індывідуальна",
+                description:
+                  "Субота і нядзеля \n 11:00 – 18:00 \n Па запісе ці ў вольным парадку ў межах графіку.",
+              },
+              {
+                title: "Групавыя візіты",
+                description:
+                  "Буднія дні для груп ад 15 чалавек \n Любы дзень \n Паводле папярэдняй дамоўленасці. ",
+              },
+              {
+                title: "Паслугі сядзібы ",
+                description:
+                  "Пакоі / Лазня / Залы \n Любы дзень \n Паводле папярэдняга браніравання.",
+              },
+            ]}
+            minHeight={300}
+          />
+        </div>
       </div>
     </>
   );
