@@ -90,7 +90,6 @@ hr {
 .card-with-text {
   width: 100%;
   max-width: 600px;
-  max-height: fit-content;
   display: flex;
   flex-direction: column;
   gap: 20px;

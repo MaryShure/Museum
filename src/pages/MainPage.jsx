@@ -60,10 +60,12 @@ const MainPage = () => {
             <CardWithText
               title="О Менске Х века"
               description="Уникальная площадка в 40 гектар, где оживает история. Погрузитесь в атмосферу древнего города через археологические находки и живое ремесло."
+              height="100%"
             />
             <CardWithText
               title="О деревне Городище XVI–XIX вв."
               description="Более 200 оригинальных экспонатов, собранных с любовью и вниманием к деталям быта наших предков."
+              height="100%"
             />
           </div>
         </div>
@@ -102,7 +104,7 @@ const MainPage = () => {
               buttonText="Подробнее"
             />
           </div>
-          <Cardsbar />
+          <Cardsbar cardNumbers={[1, 3, 4, 5]} />
         </div>
         <TextBlock
           items={[
