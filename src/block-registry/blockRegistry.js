@@ -47,6 +47,8 @@ export const blockRegistry = {
     component: CardsBarBlock,
     defaultProps: {
       cardNumbers: [1, 2, 3, 4],
+      buttonPageId: null,
+      buttonLinkUrl: "/services",
     },
     fields: [
       {
@@ -60,6 +62,16 @@ export const blockRegistry = {
           { label: "Проживание", value: 4 },
           { label: "Контакты", value: 5 },
         ],
+      },
+      {
+        name: "buttonPageId",
+        label: "Страница кнопки справа",
+        type: "page-select",
+      },
+      {
+        name: "buttonLinkUrl",
+        label: "Ссылка кнопки справа (если страница не выбрана)",
+        type: "text",
       },
     ],
   },
@@ -109,6 +121,8 @@ export const blockRegistry = {
       card1Title: "Карточка 1",
       card1Description: "Описание карточки 1",
       card1ButtonText: "Подробнее",
+      card1ButtonPageId: null,
+      card1ButtonLinkUrl: "",
       card2Title: "Карточка 2",
       card2Description: "Описание карточки 2",
       image1: "",
@@ -118,6 +132,7 @@ export const blockRegistry = {
     },
     fields: [
       { name: "title", label: "Заголовок секции", type: "text" },
+
       { name: "card1Title", label: "Заголовок карточки 1", type: "text" },
       {
         name: "card1Description",
@@ -125,6 +140,17 @@ export const blockRegistry = {
         type: "textarea",
       },
       { name: "card1ButtonText", label: "Текст кнопки 1", type: "text" },
+      {
+        name: "card1ButtonPageId",
+        label: "Страница кнопки 1",
+        type: "page-select",
+      },
+      {
+        name: "card1ButtonLinkUrl",
+        label: "Ссылка кнопки 1 (если страница не выбрана)",
+        type: "text",
+      },
+
       { name: "card2Title", label: "Заголовок карточки 2", type: "text" },
       {
         name: "card2Description",
@@ -149,17 +175,37 @@ export const blockRegistry = {
       title: "Заголовок блока",
       description: "Описание блока",
       buttonText: "Подробнее",
+      buttonPageId: null,
+      buttonLinkUrl: "",
+
       card1Image: "",
       card1Title: "Карточка 1",
       card1Description: "Описание карточки 1",
+      card1PageId: null,
+      card1LinkUrl: "",
+
       card2Image: "",
       card2Title: "Карточка 2",
       card2Description: "Описание карточки 2",
+      card2PageId: null,
+      card2LinkUrl: "",
     },
     fields: [
       { name: "title", label: "Заголовок", type: "text" },
       { name: "description", label: "Описание", type: "textarea" },
+
       { name: "buttonText", label: "Текст кнопки", type: "text" },
+      {
+        name: "buttonPageId",
+        label: "Страница основной кнопки",
+        type: "page-select",
+      },
+      {
+        name: "buttonLinkUrl",
+        label: "Ссылка основной кнопки (если страница не выбрана)",
+        type: "text",
+      },
+
       { name: "card1Image", label: "Картинка карточки 1", type: "text" },
       { name: "card1Title", label: "Заголовок карточки 1", type: "text" },
       {
@@ -167,6 +213,17 @@ export const blockRegistry = {
         label: "Описание карточки 1",
         type: "textarea",
       },
+      {
+        name: "card1PageId",
+        label: "Страница карточки 1",
+        type: "page-select",
+      },
+      {
+        name: "card1LinkUrl",
+        label: "Ссылка карточки 1 (если страница не выбрана)",
+        type: "text",
+      },
+
       { name: "card2Image", label: "Картинка карточки 2", type: "text" },
       { name: "card2Title", label: "Заголовок карточки 2", type: "text" },
       {
@@ -174,34 +231,40 @@ export const blockRegistry = {
         label: "Описание карточки 2",
         type: "textarea",
       },
+      {
+        name: "card2PageId",
+        label: "Страница карточки 2",
+        type: "page-select",
+      },
+      {
+        name: "card2LinkUrl",
+        label: "Ссылка карточки 2 (если страница не выбрана)",
+        type: "text",
+      },
     ],
   },
 
   textBlock: {
     label: "Текстовый блок",
-    component: TextBlockBlock,
+    component: TextBlockBlock, // ← ОБЯЗАТЕЛЬНО
     defaultProps: {
-      items: [
-        { title: "2021", description: "Описание первого пункта" },
-        { title: "2023", description: "Описание второго пункта" },
-      ],
-      minHeight: "300px",
+      minHeight: "300",
       width: "",
       maxWidth: "",
       height: "",
+      items: [], // базовый массив элементов
     },
     fields: [
-      { name: "items.0.title", label: "Заголовок 1", type: "text" },
-      { name: "items.0.description", label: "Описание 1", type: "textarea" },
-      { name: "items.1.title", label: "Заголовок 2", type: "text" },
-      { name: "items.1.description", label: "Описание 2", type: "textarea" },
-      { name: "items.2.title", label: "Заголовок 3", type: "text" },
-      { name: "items.2.description", label: "Описание 3", type: "textarea" },
       { name: "minHeight", label: "Минимальная высота", type: "text" },
       { name: "width", label: "Ширина", type: "text" },
       { name: "maxWidth", label: "Максимальная ширина", type: "text" },
       { name: "height", label: "Высота", type: "text" },
     ],
+    hasItemsArray: true,
+    createItem: () => ({
+      title: "Новый заголовок",
+      description: "Новое описание",
+    }),
   },
 
   map: {
