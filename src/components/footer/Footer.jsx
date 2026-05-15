@@ -1,47 +1,91 @@
-import React from "react";
-import './footer.css'
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import InstagramIcon from "../../assets/icons/InstagramIcon";
 import FacebookIcon from "../../assets/icons/FacebookIcon";
+import DotIcon from "../../assets/icons/DotIcon";
+import { getSiteSettings } from "../../api/siteSettingsApi";
+import "./footer.css";
+
+const defaultFooterConfig = {
+  logoLink: "/",
+  columns: [],
+  socials: [],
+};
+
+const resolveUrl = (item) => {
+  if (item?.url) return item.url;
+  if (item?.page?.route_path) return item.page.route_path;
+  return "#";
+};
+
+const getSocialIcon = (type) => {
+  if (type === "instagram") return <InstagramIcon />;
+  if (type === "facebook") return <FacebookIcon />;
+  return <DotIcon />;
+};
 
 const Footer = () => {
-    return(
-        <div className="footer">
-            <div className="home-icon">
-                <img src="https://starymensk.by/wp-content/uploads/2023/10/2.png" alt="Home"/>
-            </div>
-            <div>
-                <h2>Место с историей</h2>
-                <div>
-                    <a>Услуги</a>
-                    <a>Что посмотреть</a>
-                    <a>Новости</a>
-                    <a>График работы/Цены</a>
-                </div>
-            </div>
-            <div>                
-                <h2>Услуги</h2>
-                <div>
-                    <a>Пра нас</a>
-                    <a>Усадьба “Стары Менск”</a>
-                    <a>Прэса</a>
-                    <a>Кошты</a>
-                    <a>Как добраться</a>
-                </div>
-            </div>
-            <div>
-                <h2>Связаться с нами</h2>
-                <div>
-                    <a>Пра нас</a>
-                    <a>Усадьба “Стары Менск”</a>
-                    <a>Прэса</a>
-                </div>
-            </div>
-            <div className="icon-bar"> 
-                <InstagramIcon/>
-                <FacebookIcon/>
-            </div>
-        </div>
-    );
-}
+  const [config, setConfig] = useState(defaultFooterConfig);
 
-export default Footer
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const data = await getSiteSettings();
+        setConfig({
+          logoLink: data.footer_config?.logoLink || "/",
+          columns: data.footer_config?.columns || [],
+          socials: data.footer_config?.socials || [],
+        });
+      } catch (error) {
+        console.error("Не удалось загрузить настройки footer", error);
+      }
+    };
+
+    loadSettings();
+  }, []);
+
+  return (
+    <footer className="footer">
+      <div>
+        <Link to={config.logoLink || "/"} className="home-icon">
+          <img src="/logo192.png" alt="Логотип" />
+        </Link>
+      </div>
+
+      {config.columns.map((column) => (
+        <div key={column.id}>
+          <div>
+            <strong>{column.title}</strong>
+            {(column.links || []).map((link) => {
+              const href = resolveUrl(link);
+
+              return (
+                <Link key={link.id} to={href}>
+                  {link.label}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+
+      <div>
+        <div className="icon-bar">
+          {config.socials.map((social) => (
+            <a
+              key={social.id}
+              href={social.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={social.type || "social"}
+            >
+              {getSocialIcon(social.type)}
+            </a>
+          ))}
+        </div>
+      </div>
+    </footer>
+  );
+};
+
+export default Footer;

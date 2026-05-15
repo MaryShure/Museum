@@ -4,11 +4,11 @@ import { query } from "../db.js";
 const router = Router();
 
 router.post("/", async (req, res) => {
-  const { page_id, block_code, sort_order, props = {} } = req.body;
+  const { page_id, block_code, props = {} } = req.body;
 
-  if (!page_id || !block_code || sort_order === undefined) {
+  if (!page_id || !block_code) {
     return res.status(400).json({
-      message: "page_id, block_code and sort_order are required",
+      message: "page_id and block_code are required",
     });
   }
 
@@ -29,13 +29,24 @@ router.post("/", async (req, res) => {
 
     const blockType = blockTypeResult.rows[0];
 
+    const orderResult = await query(
+      `
+      SELECT COALESCE(MAX(sort_order), -1) + 1 AS next_sort_order
+      FROM page_blocks
+      WHERE page_id = $1
+      `,
+      [page_id],
+    );
+
+    const nextSortOrder = orderResult.rows[0].next_sort_order;
+
     const insertResult = await query(
       `
       INSERT INTO page_blocks (page_id, block_type_id, sort_order, props)
       VALUES ($1, $2, $3, $4::jsonb)
       RETURNING *
       `,
-      [page_id, blockType.id, sort_order, JSON.stringify(props)],
+      [page_id, blockType.id, nextSortOrder, JSON.stringify(props)],
     );
 
     res.status(201).json({

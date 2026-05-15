@@ -4,6 +4,7 @@ import ScrollToTop from "./pages/ScrollToTop";
 import CmsPage from "./pages/CmsPage";
 import AdminPageBuilder from "./admin/AdminPageBuilder";
 import AdminPagesList from "./admin/AdminPagesList";
+import AdminLayoutSettings from "./admin/AdminLayoutSettings";
 
 import PublicLayout from "./layouts/PublicLayout";
 import AdminLayout from "./layouts/AdminLayout";
@@ -25,6 +26,7 @@ function App() {
         <Route element={<AdminLayout />}>
           <Route path="/admin" element={<AdminPagesList />} />
           <Route path="/admin/:slug" element={<AdminPageBuilder />} />
+          <Route path="/admin/layout" element={<AdminLayoutSettings />} />
         </Route>
       </Routes>
     </HashRouter>

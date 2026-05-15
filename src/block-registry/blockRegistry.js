@@ -14,10 +14,27 @@ export const blockRegistry = {
     defaultProps: {
       title: "Стары Менск",
       subtitle: "Историко-культурный комплекс",
+      backgroundImage: "",
+      textAlign: "center",
     },
     fields: [
       { name: "title", label: "Заголовок", type: "text" },
       { name: "subtitle", label: "Подзаголовок", type: "textarea" },
+      {
+        name: "backgroundImage",
+        label: "Фоновое изображение",
+        type: "image",
+      },
+      {
+        name: "textAlign",
+        label: "Выравнивание текста",
+        type: "select",
+        options: [
+          { label: "Слева", value: "left" },
+          { label: "По центру", value: "center" },
+          { label: "Справа", value: "right" },
+        ],
+      },
     ],
   },
 
@@ -36,9 +53,9 @@ export const blockRegistry = {
     fields: [
       { name: "title", label: "Заголовок", type: "text" },
       { name: "description", label: "Описание", type: "textarea" },
-      { name: "images.0", label: "Изображение 1", type: "text" },
-      { name: "images.1", label: "Изображение 2", type: "text" },
-      { name: "images.2", label: "Изображение 3", type: "text" },
+      { name: "images.0", label: "Изображение 1", type: "image" },
+      { name: "images.1", label: "Изображение 2", type: "image" },
+      { name: "images.2", label: "Изображение 3", type: "image" },
     ],
   },
 
@@ -157,8 +174,8 @@ export const blockRegistry = {
         label: "Описание карточки 2",
         type: "textarea",
       },
-      { name: "image1", label: "Картинка 1", type: "text" },
-      { name: "image2", label: "Картинка 2", type: "text" },
+      { name: "image1", label: "Картинка 1", type: "image" },
+      { name: "image2", label: "Картинка 2", type: "image" },
       { name: "card3Title", label: "Заголовок карточки 3", type: "text" },
       {
         name: "card3Description",
@@ -206,8 +223,8 @@ export const blockRegistry = {
         type: "text",
       },
 
-      { name: "card1Image", label: "Картинка карточки 1", type: "text" },
-      { name: "card1Title", label: "Заголовок карточки 1", type: "text" },
+      { name: "card1Image", label: "Картинка карточки 1", type: "image" },
+      { name: "card2Image", label: "Картинка карточки 2", type: "image" },
       {
         name: "card1Description",
         label: "Описание карточки 1",

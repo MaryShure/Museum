@@ -32,6 +32,18 @@ export async function createPage(payload) {
   return handleResponse(response);
 }
 
+export async function updatePage(id, payload) {
+  const response = await fetch(`${API_BASE}/pages/${id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  return handleResponse(response);
+}
+
 export async function deletePage(id) {
   const response = await fetch(`${API_BASE}/pages/${id}`, {
     method: "DELETE",
@@ -67,6 +79,18 @@ export async function updateBlock(id, payload) {
 export async function deleteBlock(id) {
   const response = await fetch(`${API_BASE}/blocks/${id}`, {
     method: "DELETE",
+  });
+
+  return handleResponse(response);
+}
+
+export async function uploadImage(file) {
+  const formData = new FormData();
+  formData.append("image", file);
+
+  const response = await fetch(`${API_BASE}/upload`, {
+    method: "POST",
+    body: formData,
   });
 
   return handleResponse(response);

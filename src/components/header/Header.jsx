@@ -1,16 +1,79 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import MenuButton from "../buttons/MenuButton";
 import DotIcon from "../../assets/icons/DotIcon";
 import InstagramIcon from "../../assets/icons/InstagramIcon";
 import FacebookIcon from "../../assets/icons/FacebookIcon";
 import DropdownMenu from "./DropdownMenu";
+import { getSiteSettings } from "../../api/siteSettingsApi";
 import "./header.css";
 import "../map/map.css";
 
+const defaultHeaderConfig = {
+  logoLink: "/",
+  menuItems: [],
+  socials: [],
+};
+
+const resolveUrl = (item) => {
+  if (item?.url) return item.url;
+  if (item?.page?.route_path) return item.page.route_path;
+  return "#";
+};
+
+const getSocialIcon = (type) => {
+  if (type === "instagram") return <InstagramIcon />;
+  if (type === "facebook") return <FacebookIcon />;
+  return <DotIcon />;
+};
+
 const Header = () => {
+  const [config, setConfig] = useState(defaultHeaderConfig);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [activeDropdownId, setActiveDropdownId] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const data = await getSiteSettings();
+        setConfig({
+          logoLink: data.header_config?.logoLink || "/",
+          menuItems: data.header_config?.menuItems || [],
+          socials: data.header_config?.socials || [],
+        });
+      } catch (error) {
+        console.error("Не удалось загрузить настройки header", error);
+      }
+    };
+
+    loadSettings();
+  }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = isMobileMenuOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isMobileMenuOpen]);
+
+  const activeDropdown = useMemo(
+    () =>
+      config.menuItems.find(
+        (item) => item.id === activeDropdownId && item.type === "dropdown",
+      ) || null,
+    [config.menuItems, activeDropdownId],
+  );
+
+  const openDropdown = (itemId) => {
+    setActiveDropdownId(itemId);
+    setIsDropdownOpen(true);
+  };
+
+  const closeDropdown = () => {
+    setActiveDropdownId(null);
+    setIsDropdownOpen(false);
+  };
 
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
@@ -20,135 +83,108 @@ const Header = () => {
     setIsMobileMenuOpen((prev) => !prev);
   };
 
-  useEffect(() => {
-    document.body.style.overflow = isMobileMenuOpen ? "hidden" : "";
-
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isMobileMenuOpen]);
-
   return (
     <>
       <header
-        className={`header ${
-          isDropdownOpen ? "has-dropdown-open" : ""
-        } ${isMobileMenuOpen ? "mobile-open" : ""}`}
+        className={`header ${isDropdownOpen ? "has-dropdown-open" : ""}`}
+        onMouseLeave={closeDropdown}
       >
-        <a href="#/" className="home-icon">
-          <img
-            src="https://starymensk.by/wp-content/uploads/2023/10/2.png"
-            alt="Логотип"
-          />
-        </a>
+        <Link to={config.logoLink || "/"} className="home-icon">
+          <img src="/logo192.png" alt="Логотип" />
+        </Link>
 
         <div className="buttons-bar desktop-menu">
-          <div
-            className="menu-item"
-            onMouseEnter={() => setIsDropdownOpen(true)}
-            onMouseLeave={() => setIsDropdownOpen(false)}
-          >
-            <MenuButton icon={<DotIcon />} text="Услуги" linkUrl="/services" />
-            <DropdownMenu isOpen={isDropdownOpen} />
-          </div>
+          {config.menuItems.map((item) => {
+            const linkUrl = resolveUrl(item);
+            const hasDropdown =
+              item.type === "dropdown" && item.dropdownItems?.length > 0;
 
-          <MenuButton text="Новости" linkUrl="/about" />
-          <MenuButton text="Что посмотреть" linkUrl="/afisha" />
-          <MenuButton text="График работы/Цены" linkUrl="/timeprice" />
+            return (
+              <div
+                key={item.id}
+                className="menu-item"
+                onMouseEnter={() => {
+                  if (hasDropdown) {
+                    openDropdown(item.id);
+                  } else {
+                    closeDropdown();
+                  }
+                }}
+              >
+                <MenuButton
+                  text={item.label}
+                  linkUrl={linkUrl}
+                  icon={hasDropdown ? <DotIcon /> : null}
+                  iconPosition="right"
+                />
+              </div>
+            );
+          })}
         </div>
 
         <div className="icon-bar desktop-menu">
-          <a
-            href="https://instagram.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Instagram"
-          >
-            <InstagramIcon />
-          </a>
-          <a
-            href="https://facebook.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Facebook"
-          >
-            <FacebookIcon />
-          </a>
-          <button
-            type="button"
-            className={`secondary-button mobile-menu-toggle ${
-              isMobileMenuOpen ? "is-active" : ""
-            }`}
-            onClick={toggleMobileMenu}
-            aria-label={isMobileMenuOpen ? "Закрыть меню" : "Открыть меню"}
-            aria-expanded={isMobileMenuOpen}
-            aria-controls="mobile-menu"
-          >
-            <span className="burger-icon" aria-hidden="true">
-              <span></span>
-              <span></span>
-              <span></span>
-            </span>
-          </button>
+          {config.socials.map((social) => (
+            <a
+              key={social.id}
+              href={social.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={social.type || "social"}
+            >
+              {getSocialIcon(social.type)}
+            </a>
+          ))}
         </div>
+
+        <button
+          type="button"
+          className={`buttons-bar mobile-menu-toggle ${
+            isMobileMenuOpen ? "is-active" : ""
+          }`}
+          onClick={toggleMobileMenu}
+          aria-label={isMobileMenuOpen ? "Закрыть меню" : "Открыть меню"}
+        >
+          <span className="burger-icon">
+            <span />
+            <span />
+            <span />
+          </span>
+        </button>
+
+        <DropdownMenu
+          isOpen={isDropdownOpen}
+          items={activeDropdown?.dropdownItems || []}
+        />
       </header>
 
       <div
-        id="mobile-menu"
         className={`mobile-menu ${isMobileMenuOpen ? "mobile-menu-open" : ""}`}
       >
         <div className="mobile-menu-content">
           <nav className="mobile-menu-nav">
-            <MenuButton
-              text="Услуги"
-              linkUrl="/services"
-              onClick={closeMobileMenu}
-            />
-            <MenuButton
-              text="Новости"
-              linkUrl="/about"
-              onClick={closeMobileMenu}
-            />
-            <MenuButton
-              text="Что посмотреть"
-              linkUrl="/afisha"
-              onClick={closeMobileMenu}
-            />
-            <MenuButton
-              text="График работы/Цены"
-              linkUrl="/timeprice"
-              onClick={closeMobileMenu}
-            />
+            {config.menuItems.map((item) => {
+              const linkUrl = resolveUrl(item);
+
+              return (
+                <Link key={item.id} to={linkUrl} onClick={closeMobileMenu}>
+                  <MenuButton text={item.label} />
+                </Link>
+              );
+            })}
           </nav>
 
-          <div className="map-content">
-            <div className="map-text-block">
-              <h2>Адрес</h2>
-              <p>д. Городище, Минский район, ул. Замковая, 1</p>
-            </div>
-            <div className="map-text-block">
-              <h2>Для навигаторов</h2>
-              <p>Введите «Стары Менск» или координаты: 53.8247, 27.3411</p>
-            </div>
-          </div>
-
           <div className="mobile-socials">
-            <a
-              href="https://instagram.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Instagram"
-            >
-              <InstagramIcon />
-            </a>
-            <a
-              href="https://facebook.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Facebook"
-            >
-              <FacebookIcon />
-            </a>
+            {config.socials.map((social) => (
+              <a
+                key={social.id}
+                href={social.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={social.type || "social"}
+              >
+                {getSocialIcon(social.type)}
+              </a>
+            ))}
           </div>
         </div>
       </div>

@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import "../styles/global.css";
 import "../styles/main_page.css";
 import PageRenderer from "../renderer/PageRenderer";
-import { getPageBySlug } from "../../server/src/api/pagesApi";
+import { getPageBySlug } from "../api/pagesApi";
 
 const CmsPage = ({ defaultSlug = "main", wrapWithMainContent = false }) => {
   const { slug } = useParams();

@@ -1,9 +1,12 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import path from "path";
 import { query } from "./db.js";
 import pagesRouter from "./routes/pages.js";
 import blocksRouter from "./routes/blocks.js";
+import uploadRouter from "./routes/upload.js";
+import siteSettingsRouter from "./routes/siteSettings.js";
 
 dotenv.config();
 
@@ -17,6 +20,9 @@ app.use(
 );
 
 app.use(express.json());
+
+app.use("/uploads", express.static(path.resolve("uploads")));
+app.use("/api/site-settings", siteSettingsRouter);
 
 app.get("/api/health", async (req, res) => {
   try {
@@ -37,6 +43,7 @@ app.get("/api/health", async (req, res) => {
 
 app.use("/api/pages", pagesRouter);
 app.use("/api/blocks", blocksRouter);
+app.use("/api/upload", uploadRouter);
 
 const PORT = process.env.PORT || 4000;
 
