@@ -74,9 +74,56 @@ router.get("/:slug", async (req, res) => {
       [page.id],
     );
 
+    const blocks = blocksResult.rows;
+    const cardsGridBlockIds = blocks
+      .filter((block) => block.type === "cardsGrid")
+      .map((block) => block.id);
+
+    let itemsByBlockId = {};
+
+    if (cardsGridBlockIds.length > 0) {
+      const itemsResult = await query(
+        `
+        SELECT
+          id,
+          block_id,
+          item_type,
+          sort_order,
+          is_visible,
+          props,
+          created_at,
+          updated_at
+        FROM cards_grid_items
+        WHERE block_id = ANY($1::bigint[])
+        ORDER BY sort_order ASC, id ASC
+        `,
+        [cardsGridBlockIds],
+      );
+
+      itemsByBlockId = itemsResult.rows.reduce((acc, item) => {
+        const key = item.block_id;
+        if (!acc[key]) {
+          acc[key] = [];
+        }
+        acc[key].push(item);
+        return acc;
+      }, {});
+    }
+
+    const enrichedBlocks = blocks.map((block) => {
+      if (block.type !== "cardsGrid") {
+        return block;
+      }
+
+      return {
+        ...block,
+        items: itemsByBlockId[block.id] || [],
+      };
+    });
+
     res.json({
       ...page,
-      blocks: blocksResult.rows,
+      blocks: enrichedBlocks,
     });
   } catch (error) {
     res

@@ -107,7 +107,7 @@ h4 {
 }
 
 .page-block--with-top-offset {
-  padding-top: 200px;
+  padding-top: 160px;
 }
 
 @media (max-width: 1024px) {
@@ -115,7 +115,7 @@ h4 {
     padding: 0 60px;
   }
   .page-block--with-top-offset {
-    padding-top: 140px;
+    padding-top: 120px;
   }
 }
 
@@ -130,6 +130,6 @@ h4 {
   }
 
   .page-block--with-top-offset {
-    padding-top: 100px;
+    padding-top: 80px;
   }
 }

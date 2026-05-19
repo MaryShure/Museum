@@ -6,12 +6,6 @@ import DotIcon from "../../assets/icons/DotIcon";
 import { getSiteSettings } from "../../api/siteSettingsApi";
 import "./footer.css";
 
-const defaultFooterConfig = {
-  logoLink: "/",
-  columns: [],
-  socials: [],
-};
-
 const resolveUrl = (item) => {
   if (item?.url) return item.url;
   if (item?.page?.route_path) return item.page.route_path;
@@ -25,7 +19,12 @@ const getSocialIcon = (type) => {
 };
 
 const Footer = () => {
-  const [config, setConfig] = useState(defaultFooterConfig);
+  const [config, setConfig] = useState({
+    logoLink: "/",
+    logoUrl: "",
+    columns: [],
+    socials: [],
+  });
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -33,6 +32,7 @@ const Footer = () => {
         const data = await getSiteSettings();
         setConfig({
           logoLink: data.footer_config?.logoLink || "/",
+          logoUrl: data.footer_config?.logoUrl || "",
           columns: data.footer_config?.columns || [],
           socials: data.footer_config?.socials || [],
         });
@@ -48,7 +48,7 @@ const Footer = () => {
     <footer className="footer">
       <div>
         <Link to={config.logoLink || "/"} className="home-icon">
-          <img src="/logo192.png" alt="Логотип" />
+          <img src={config.logoUrl || "/logo192.png"} alt="Логотип" />
         </Link>
       </div>
 

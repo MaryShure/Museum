@@ -1,13 +1,15 @@
 import TextBlock from "../components/cards/TextBlock";
 
-const TextBlockBlock = ({ items = [], minHeight, width, maxWidth, height }) => {
+const TextBlockBlock = ({ props = {}, ...rest }) => {
+  const source = props && Object.keys(props).length ? props : rest;
+
   return (
     <TextBlock
-      items={items}
-      minHeight={minHeight}
-      width={width}
-      maxWidth={maxWidth}
-      height={height}
+      items={source.items || []}
+      minHeight={source.minHeight || ""}
+      width={source.width || ""}
+      maxWidth={source.maxWidth || ""}
+      height={source.height || ""}
     />
   );
 };

@@ -7,6 +7,7 @@ import pagesRouter from "./routes/pages.js";
 import blocksRouter from "./routes/blocks.js";
 import uploadRouter from "./routes/upload.js";
 import siteSettingsRouter from "./routes/siteSettings.js";
+import cardsGridItemsRouter from "./routes/cardsGridItems.js";
 
 dotenv.config();
 
@@ -44,6 +45,7 @@ app.get("/api/health", async (req, res) => {
 app.use("/api/pages", pagesRouter);
 app.use("/api/blocks", blocksRouter);
 app.use("/api/upload", uploadRouter);
+app.use("/api/blocks", cardsGridItemsRouter);
 
 const PORT = process.env.PORT || 4000;
 

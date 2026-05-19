@@ -9,6 +9,9 @@ import {
   createBlock,
   deleteBlock,
   uploadImage,
+  createCardsGridItem,
+  updateCardsGridItem,
+  deleteCardsGridItem,
 } from "../api/pagesApi";
 
 const API_ORIGIN = "http://localhost:4000";
@@ -25,6 +28,7 @@ const normalizeBlock = (block, fallbackSortOrder = 1) => ({
   sort_order: block.sort_order ?? block.sortorder ?? fallbackSortOrder,
   is_visible: block.is_visible ?? block.isvisible ?? true,
   props: block.props || {},
+  items: Array.isArray(block.items) ? block.items : [],
 });
 
 const sortBlocks = (blocks) =>
@@ -51,6 +55,122 @@ const resolveMediaUrl = (url) => {
     return `${API_ORIGIN}${url}`;
   }
   return url;
+};
+
+const cardsGridItemSchemas = {
+  card: {
+    label: "Карточка",
+    defaultProps: {
+      variant: "default",
+      image: "",
+      altText: "",
+      title: "",
+      description: "",
+      pageId: null,
+      linkUrl: "",
+    },
+    fields: [
+      {
+        name: "variant",
+        label: "Вариант",
+        type: "select",
+        options: [
+          { label: "Обычная", value: "default" },
+          { label: "Без hover", value: "noHover" },
+        ],
+      },
+      { name: "image", label: "Изображение", type: "image" },
+      { name: "altText", label: "Alt текст", type: "text" },
+      { name: "title", label: "Заголовок", type: "text" },
+      { name: "description", label: "Описание", type: "textarea" },
+      { name: "pageId", label: "Страница", type: "page-select" },
+      { name: "linkUrl", label: "Ссылка", type: "text" },
+    ],
+  },
+  textCard: {
+    label: "Текстовая карточка",
+    defaultProps: {
+      title: "",
+      description: "",
+      buttonType: "primary",
+      buttonText: "",
+      pageId: null,
+      linkUrl: "",
+      width: "",
+      maxWidth: "",
+      minHeight: "",
+      height: "",
+    },
+    fields: [
+      { name: "title", label: "Заголовок", type: "text" },
+      { name: "description", label: "Описание", type: "textarea" },
+      {
+        name: "buttonType",
+        label: "Тип кнопки",
+        type: "select",
+        options: [
+          { label: "Primary", value: "primary" },
+          { label: "Secondary", value: "secondary" },
+        ],
+      },
+      { name: "buttonText", label: "Текст кнопки", type: "text" },
+      { name: "pageId", label: "Страница", type: "page-select" },
+      { name: "linkUrl", label: "Ссылка", type: "text" },
+      { name: "width", label: "Width", type: "text" },
+      { name: "maxWidth", label: "Max width", type: "text" },
+      { name: "minHeight", label: "Min height", type: "text" },
+      { name: "height", label: "Height", type: "text" },
+    ],
+  },
+  image: {
+    label: "Изображение",
+    defaultProps: {
+      image: "",
+      altText: "",
+      width: "",
+      maxWidth: "",
+      minHeight: "",
+      height: "",
+    },
+    fields: [
+      { name: "image", label: "Изображение", type: "image" },
+      { name: "altText", label: "Alt текст", type: "text" },
+      { name: "width", label: "Width", type: "text" },
+      { name: "maxWidth", label: "Max width", type: "text" },
+      { name: "minHeight", label: "Min height", type: "text" },
+      { name: "height", label: "Height", type: "text" },
+    ],
+  },
+  text: {
+    label: "Текст",
+    defaultProps: {
+      title: "",
+      description: "",
+      textAlign: "left",
+      width: "",
+      maxWidth: "",
+      minHeight: "",
+      height: "",
+    },
+    fields: [
+      { name: "title", label: "Заголовок", type: "text" },
+      { name: "description", label: "Описание", type: "textarea" },
+      {
+        name: "textAlign",
+        label: "Выравнивание",
+        type: "select",
+        options: [
+          { label: "Слева", value: "left" },
+          { label: "По центру", value: "center" },
+          { label: "Справа", value: "right" },
+        ],
+      },
+      { name: "width", label: "Width", type: "text" },
+      { name: "maxWidth", label: "Max width", type: "text" },
+      { name: "minHeight", label: "Min height", type: "text" },
+      { name: "height", label: "Height", type: "text" },
+    ],
+  },
 };
 
 const getFieldValue = (block, fieldName) => {
@@ -81,6 +201,8 @@ const AdminPageBuilder = () => {
   const [pages, setPages] = useState([]);
   const [draggedBlockId, setDraggedBlockId] = useState(null);
   const [uploadingField, setUploadingField] = useState("");
+  // Состояние для свёрнутых/развёрнутых карточек в cardsGrid
+  const [expandedItems, setExpandedItems] = useState({});
 
   const { slug = "main" } = useParams();
 
@@ -97,6 +219,9 @@ const AdminPageBuilder = () => {
     };
 
     setPage(normalizedPage);
+
+    // Сброс состояния свёрнутых карточек для нового блока
+    setExpandedItems({});
 
     if (preserveSelection) {
       const stillExists = normalizedPage.blocks.some(
@@ -149,6 +274,28 @@ const AdminPageBuilder = () => {
     [page.blocks, selectedBlockId],
   );
 
+  const selectedBlockConfig = useMemo(
+    () => (selectedBlock ? blockRegistry[selectedBlock.type] : null),
+    [selectedBlock],
+  );
+
+  const selectedCardsGridItems = useMemo(() => {
+    if (selectedBlock?.type !== "cardsGrid") return [];
+    return Array.isArray(selectedBlock.items) ? selectedBlock.items : [];
+  }, [selectedBlock]);
+
+  const getLinkedUrlFieldName = (pageFieldName) => {
+    const linkedUrlFieldMap = {
+      buttonPageId: "buttonLinkUrl",
+      card1ButtonPageId: "card1ButtonLinkUrl",
+      card1PageId: "card1LinkUrl",
+      card2PageId: "card2LinkUrl",
+      pageId: "linkUrl",
+    };
+
+    return linkedUrlFieldMap[pageFieldName] || null;
+  };
+
   const updateBlockProp = (field, value) => {
     setPage((prev) => ({
       ...prev,
@@ -175,7 +322,7 @@ const AdminPageBuilder = () => {
           const nextItems = [...(block.props.items || [])];
 
           if (!nextItems[index]) {
-            nextItems[index] = { title: "", description: "" };
+            nextItems[index] = {};
           }
 
           nextItems[index] = {
@@ -198,6 +345,37 @@ const AdminPageBuilder = () => {
             ...block.props,
             [field]: value,
           },
+        };
+      }),
+    }));
+  };
+
+  const updatePageSelectProp = (pageFieldName, pageIdValue) => {
+    const pageId = pageIdValue ? Number(pageIdValue) : null;
+
+    setPage((prev) => ({
+      ...prev,
+      blocks: prev.blocks.map((block) => {
+        if (block.id !== selectedBlockId) return block;
+
+        const nextProps = {
+          ...block.props,
+          [pageFieldName]: pageId,
+        };
+
+        const urlFieldName = getLinkedUrlFieldName(pageFieldName);
+
+        if (urlFieldName) {
+          const selectedPage = pages.find((p) => Number(p.id) === pageId);
+
+          nextProps[urlFieldName] = selectedPage
+            ? selectedPage.route_path || `/${selectedPage.slug}`
+            : "";
+        }
+
+        return {
+          ...block,
+          props: nextProps,
         };
       }),
     }));
@@ -228,6 +406,7 @@ const AdminPageBuilder = () => {
     }));
   };
 
+  // Сохраняем выбранный блок (его props и все элементы cardsGrid)
   const handleSaveSelectedBlock = async () => {
     if (!selectedBlock) return;
 
@@ -235,13 +414,17 @@ const AdminPageBuilder = () => {
       setIsSaving(true);
       setError("");
 
+      // 1. Сохраняем сам блок (props, is_visible)
       const updated = await updateBlock(selectedBlock.id, {
         props: selectedBlock.props,
         is_visible: selectedBlock.is_visible ?? true,
       });
 
       const normalizedUpdatedBlock = normalizeBlock(
-        updated,
+        {
+          ...selectedBlock,
+          ...updated,
+        },
         selectedBlock.sort_order,
       );
 
@@ -250,11 +433,30 @@ const AdminPageBuilder = () => {
         blocks: sortBlocks(
           prev.blocks.map((block) =>
             block.id === normalizedUpdatedBlock.id
-              ? { ...block, ...normalizedUpdatedBlock }
+              ? {
+                  ...block,
+                  ...normalizedUpdatedBlock,
+                  items: block.items || normalizedUpdatedBlock.items || [],
+                }
               : block,
           ),
         ),
       }));
+
+      // 2. Если это cardsGrid – сохраняем все его элементы
+      if (selectedBlock.type === "cardsGrid") {
+        const items = selectedCardsGridItems;
+        if (items.length > 0) {
+          const savePromises = items.map((item) =>
+            updateCardsGridItem(selectedBlock.id, item.id, {
+              props: item.props,
+              sort_order: item.sort_order,
+              is_visible: item.is_visible ?? true,
+            }),
+          );
+          await Promise.all(savePromises);
+        }
+      }
     } catch (err) {
       setError(err.message || "Не удалось сохранить блок");
     } finally {
@@ -354,69 +556,6 @@ const AdminPageBuilder = () => {
     }
   };
 
-  const updateTextBlockItem = (index, key, value) => {
-    setPage((prev) => ({
-      ...prev,
-      blocks: prev.blocks.map((block) => {
-        if (block.id !== selectedBlockId) return block;
-
-        const nextItems = [...(block.props.items || [])];
-        nextItems[index] = {
-          ...(nextItems[index] || { title: "", description: "" }),
-          [key]: value,
-        };
-
-        return {
-          ...block,
-          props: {
-            ...block.props,
-            items: nextItems,
-          },
-        };
-      }),
-    }));
-  };
-
-  const addTextBlockItem = () => {
-    const createItem =
-      blockRegistry[selectedBlock?.type]?.createItem ||
-      (() => ({ title: "", description: "" }));
-
-    setPage((prev) => ({
-      ...prev,
-      blocks: prev.blocks.map((block) => {
-        if (block.id !== selectedBlockId) return block;
-
-        return {
-          ...block,
-          props: {
-            ...block.props,
-            items: [...(block.props.items || []), createItem()],
-          },
-        };
-      }),
-    }));
-  };
-
-  const removeTextBlockItem = (indexToRemove) => {
-    setPage((prev) => ({
-      ...prev,
-      blocks: prev.blocks.map((block) => {
-        if (block.id !== selectedBlockId) return block;
-
-        return {
-          ...block,
-          props: {
-            ...block.props,
-            items: (block.props.items || []).filter(
-              (_, index) => index !== indexToRemove,
-            ),
-          },
-        };
-      }),
-    }));
-  };
-
   const handleImageUpload = async (fieldName, file) => {
     if (!file) return;
 
@@ -431,6 +570,166 @@ const AdminPageBuilder = () => {
     } finally {
       setUploadingField("");
     }
+  };
+
+  // Локальное обновление пропсов элемента cardsGrid
+  const updateCardsGridItemPropLocal = (itemId, fieldName, value) => {
+    setPage((prev) => ({
+      ...prev,
+      blocks: prev.blocks.map((block) => {
+        if (block.id !== selectedBlockId) return block;
+
+        return {
+          ...block,
+          items: (block.items || []).map((item) =>
+            item.id === itemId
+              ? {
+                  ...item,
+                  props: {
+                    ...(item.props || {}),
+                    [fieldName]: value,
+                  },
+                }
+              : item,
+          ),
+        };
+      }),
+    }));
+  };
+
+  const updateCardsGridItemPageSelectLocal = (
+    itemId,
+    pageFieldName,
+    pageIdValue,
+  ) => {
+    const pageId = pageIdValue ? Number(pageIdValue) : null;
+    const urlFieldName = getLinkedUrlFieldName(pageFieldName);
+    const selectedPageData = pages.find((p) => Number(p.id) === pageId);
+
+    setPage((prev) => ({
+      ...prev,
+      blocks: prev.blocks.map((block) => {
+        if (block.id !== selectedBlockId) return block;
+
+        return {
+          ...block,
+          items: (block.items || []).map((item) =>
+            item.id === itemId
+              ? {
+                  ...item,
+                  props: {
+                    ...(item.props || {}),
+                    [pageFieldName]: pageId,
+                    ...(urlFieldName
+                      ? {
+                          [urlFieldName]: selectedPageData
+                            ? selectedPageData.route_path ||
+                              `/${selectedPageData.slug}`
+                            : "",
+                        }
+                      : {}),
+                  },
+                }
+              : item,
+          ),
+        };
+      }),
+    }));
+  };
+
+  const handleAddCardsGridItem = async (itemType) => {
+    if (!selectedBlock || selectedBlock.type !== "cardsGrid") return;
+
+    const schema = cardsGridItemSchemas[itemType];
+    if (!schema) return;
+
+    try {
+      setError("");
+
+      const created = await createCardsGridItem(selectedBlock.id, {
+        item_type: itemType,
+        props: schema.defaultProps,
+        is_visible: true,
+      });
+
+      setPage((prev) => ({
+        ...prev,
+        blocks: prev.blocks.map((block) => {
+          if (block.id !== selectedBlockId) return block;
+
+          return {
+            ...block,
+            items: [...(block.items || []), created].sort(
+              (a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0),
+            ),
+          };
+        }),
+      }));
+
+      // По умолчанию новую карточку раскрываем
+      setExpandedItems((prev) => ({ ...prev, [created.id]: true }));
+    } catch (err) {
+      setError(err.message || "Не удалось добавить элемент композиции");
+    }
+  };
+
+  const handleDeleteCardsGridItem = async (itemId) => {
+    if (!selectedBlock || selectedBlock.type !== "cardsGrid") return;
+
+    const confirmed = window.confirm("Удалить элемент композиции?");
+    if (!confirmed) return;
+
+    try {
+      setError("");
+      await deleteCardsGridItem(selectedBlock.id, itemId);
+
+      setPage((prev) => ({
+        ...prev,
+        blocks: prev.blocks.map((block) => {
+          if (block.id !== selectedBlockId) return block;
+
+          return {
+            ...block,
+            items: (block.items || []).filter((item) => item.id !== itemId),
+          };
+        }),
+      }));
+
+      // Удаляем состояние свёрнутости
+      setExpandedItems((prev) => {
+        const newState = { ...prev };
+        delete newState[itemId];
+        return newState;
+      });
+    } catch (err) {
+      setError(err.message || "Не удалось удалить элемент композиции");
+    }
+  };
+
+  const handleCardsGridItemImageUpload = async (itemId, fieldName, file) => {
+    if (!file) return;
+
+    const fullFieldName = `cards-grid-item-${itemId}-${fieldName}`;
+
+    try {
+      setUploadingField(fullFieldName);
+      setError("");
+
+      const result = await uploadImage(file);
+      updateCardsGridItemPropLocal(
+        itemId,
+        fieldName,
+        `${API_ORIGIN}${result.url}`,
+      );
+    } catch (err) {
+      setError(err.message || "Не удалось загрузить изображение");
+    } finally {
+      setUploadingField("");
+    }
+  };
+
+  const toggleItemExpand = (itemId) => {
+    setExpandedItems((prev) => ({ ...prev, [itemId]: !prev[itemId] }));
   };
 
   const renderFieldInput = (field, value) => {
@@ -452,7 +751,7 @@ const AdminPageBuilder = () => {
           onChange={(e) => updateBlockProp(field.name, e.target.value)}
         >
           {(field.options || []).map((option) => (
-            <option key={option.value} value={option.value}>
+            <option key={String(option.value)} value={option.value}>
               {option.label}
             </option>
           ))}
@@ -465,12 +764,7 @@ const AdminPageBuilder = () => {
         <select
           className="builder-input"
           value={value ?? ""}
-          onChange={(e) =>
-            updateBlockProp(
-              field.name,
-              e.target.value ? Number(e.target.value) : null,
-            )
-          }
+          onChange={(e) => updatePageSelectProp(field.name, e.target.value)}
         >
           <option value="">Не выбрано</option>
           {pages.map((p) => (
@@ -482,13 +776,43 @@ const AdminPageBuilder = () => {
       );
     }
 
+    if (field.type === "page-multi-select") {
+      const currentValues = Array.isArray(value) ? value.map(Number) : [];
+
+      return (
+        <div className="builder-checkbox-group">
+          {pages.map((p) => (
+            <label key={p.id} className="builder-checkbox-option">
+              <input
+                type="checkbox"
+                checked={currentValues.includes(Number(p.id))}
+                onChange={(e) => {
+                  const nextValues = e.target.checked
+                    ? [...new Set([...currentValues, Number(p.id)])]
+                    : currentValues.filter((id) => id !== Number(p.id));
+
+                  updateBlockProp(field.name, nextValues);
+                }}
+              />
+              <span>
+                {p.title} ({p.route_path || p.slug})
+              </span>
+            </label>
+          ))}
+        </div>
+      );
+    }
+
     if (field.type === "checkbox-group") {
       const currentValues = Array.isArray(value) ? value : [];
 
       return (
         <div className="builder-checkbox-group">
           {field.options?.map((option) => (
-            <label key={option.value} className="builder-checkbox-option">
+            <label
+              key={String(option.value)}
+              className="builder-checkbox-option"
+            >
               <input
                 type="checkbox"
                 checked={currentValues.includes(option.value)}
@@ -515,11 +839,10 @@ const AdminPageBuilder = () => {
           <input
             className="builder-input"
             type="text"
-            value={value || ""}
+            value={value ?? ""}
             placeholder="URL изображения"
             onChange={(e) => updateBlockProp(field.name, e.target.value)}
           />
-
           <label className="builder-upload-button">
             Загрузить с компьютера
             <input
@@ -538,7 +861,7 @@ const AdminPageBuilder = () => {
 
           {previewUrl ? (
             <div className="builder-image-preview">
-              <img src={previewUrl} alt={field.label || "Preview"} />
+              <img src={previewUrl} alt={`${field.label} preview`} />
             </div>
           ) : null}
         </div>
@@ -555,25 +878,367 @@ const AdminPageBuilder = () => {
     );
   };
 
+  const renderLegacyArrayItemFieldInput = (itemIndex, field, value) => {
+    const fieldPath = `items.${itemIndex}.${field.name}`;
+
+    const updateArrayItem = (index, key, nextValue) => {
+      updateBlockProp(`items.${index}.${key}`, nextValue);
+    };
+
+    const updateItemPageSelectProp = (index, pageFieldName, pageIdValue) => {
+      const pageId = pageIdValue ? Number(pageIdValue) : null;
+
+      setPage((prev) => ({
+        ...prev,
+        blocks: prev.blocks.map((block) => {
+          if (block.id !== selectedBlockId) return block;
+
+          const nextItems = [...(block.props.items || [])];
+          const currentItem = nextItems[index] || {};
+          const nextItem = {
+            ...currentItem,
+            [pageFieldName]: pageId,
+          };
+
+          const urlFieldName = getLinkedUrlFieldName(pageFieldName);
+
+          if (urlFieldName) {
+            const selectedPage = pages.find((p) => Number(p.id) === pageId);
+            nextItem[urlFieldName] = selectedPage
+              ? selectedPage.route_path || `/${selectedPage.slug}`
+              : "";
+          }
+
+          nextItems[index] = nextItem;
+
+          return {
+            ...block,
+            props: {
+              ...block.props,
+              items: nextItems,
+            },
+          };
+        }),
+      }));
+    };
+
+    const updateItemCheckboxGroup = (
+      index,
+      fieldName,
+      optionValue,
+      checked,
+    ) => {
+      setPage((prev) => ({
+        ...prev,
+        blocks: prev.blocks.map((block) => {
+          if (block.id !== selectedBlockId) return block;
+
+          const nextItems = [...(block.props.items || [])];
+          const currentItem = nextItems[index] || {};
+          const currentValues = Array.isArray(currentItem[fieldName])
+            ? currentItem[fieldName]
+            : [];
+
+          const nextValues = checked
+            ? [...new Set([...currentValues, optionValue])]
+            : currentValues.filter((value) => value !== optionValue);
+
+          nextItems[index] = {
+            ...currentItem,
+            [fieldName]: nextValues,
+          };
+
+          return {
+            ...block,
+            props: {
+              ...block.props,
+              items: nextItems,
+            },
+          };
+        }),
+      }));
+    };
+
+    const handleLegacyItemImageUpload = async (index, fieldName, file) => {
+      if (!file) return;
+
+      try {
+        setUploadingField(fieldPath);
+        setError("");
+
+        const result = await uploadImage(file);
+        updateArrayItem(index, fieldName, `${API_ORIGIN}${result.url}`);
+      } catch (err) {
+        setError(err.message || "Не удалось загрузить изображение");
+      } finally {
+        setUploadingField("");
+      }
+    };
+
+    if (field.type === "textarea") {
+      return (
+        <textarea
+          className="builder-input builder-textarea"
+          value={value ?? ""}
+          onChange={(e) =>
+            updateArrayItem(itemIndex, field.name, e.target.value)
+          }
+        />
+      );
+    }
+
+    if (field.type === "select") {
+      return (
+        <select
+          className="builder-input"
+          value={value ?? ""}
+          onChange={(e) =>
+            updateArrayItem(itemIndex, field.name, e.target.value)
+          }
+        >
+          {(field.options || []).map((option) => (
+            <option key={String(option.value)} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      );
+    }
+
+    if (field.type === "page-select") {
+      return (
+        <select
+          className="builder-input"
+          value={value ?? ""}
+          onChange={(e) =>
+            updateItemPageSelectProp(itemIndex, field.name, e.target.value)
+          }
+        >
+          <option value="">Не выбрано</option>
+          {pages.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.title} ({p.route_path || p.slug})
+            </option>
+          ))}
+        </select>
+      );
+    }
+
+    if (field.type === "checkbox-group") {
+      const currentValues = Array.isArray(value) ? value : [];
+
+      return (
+        <div className="builder-checkbox-group">
+          {field.options?.map((option) => (
+            <label
+              key={String(option.value)}
+              className="builder-checkbox-option"
+            >
+              <input
+                type="checkbox"
+                checked={currentValues.includes(option.value)}
+                onChange={(e) =>
+                  updateItemCheckboxGroup(
+                    itemIndex,
+                    field.name,
+                    option.value,
+                    e.target.checked,
+                  )
+                }
+              />
+              <span>{option.label}</span>
+            </label>
+          ))}
+        </div>
+      );
+    }
+
+    if (field.type === "image") {
+      const previewUrl = resolveMediaUrl(value);
+
+      return (
+        <div className="builder-image-field">
+          <input
+            className="builder-input"
+            type="text"
+            value={value ?? ""}
+            placeholder="URL изображения"
+            onChange={(e) =>
+              updateArrayItem(itemIndex, field.name, e.target.value)
+            }
+          />
+          <label className="builder-upload-button">
+            Загрузить с компьютера
+            <input
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={(e) =>
+                handleLegacyItemImageUpload(
+                  itemIndex,
+                  field.name,
+                  e.target.files?.[0],
+                )
+              }
+            />
+          </label>
+
+          {uploadingField === fieldPath ? (
+            <div className="builder-upload-status">Загрузка...</div>
+          ) : null}
+
+          {previewUrl ? (
+            <div className="builder-image-preview">
+              <img src={previewUrl} alt={`${field.label} preview`} />
+            </div>
+          ) : null}
+        </div>
+      );
+    }
+
+    return (
+      <input
+        className="builder-input"
+        type="text"
+        value={value ?? ""}
+        onChange={(e) => updateArrayItem(itemIndex, field.name, e.target.value)}
+      />
+    );
+  };
+
+  const renderCardsGridItemFieldInput = (item, field) => {
+    const value = item.props?.[field.name] ?? "";
+    const fieldPath = `cards-grid-item-${item.id}-${field.name}`;
+
+    if (field.type === "textarea") {
+      return (
+        <textarea
+          className="builder-input builder-textarea"
+          value={value ?? ""}
+          onChange={(e) =>
+            updateCardsGridItemPropLocal(item.id, field.name, e.target.value)
+          }
+        />
+      );
+    }
+
+    if (field.type === "select") {
+      return (
+        <select
+          className="builder-input"
+          value={value ?? ""}
+          onChange={(e) =>
+            updateCardsGridItemPropLocal(item.id, field.name, e.target.value)
+          }
+        >
+          {(field.options || []).map((option) => (
+            <option key={String(option.value)} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      );
+    }
+
+    if (field.type === "page-select") {
+      return (
+        <select
+          className="builder-input"
+          value={value ?? ""}
+          onChange={(e) =>
+            updateCardsGridItemPageSelectLocal(
+              item.id,
+              field.name,
+              e.target.value,
+            )
+          }
+        >
+          <option value="">Не выбрано</option>
+          {pages.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.title} ({p.route_path || p.slug})
+            </option>
+          ))}
+        </select>
+      );
+    }
+
+    if (field.type === "image") {
+      const previewUrl = resolveMediaUrl(value);
+
+      return (
+        <div className="builder-image-field">
+          <input
+            className="builder-input"
+            type="text"
+            value={value ?? ""}
+            placeholder="URL изображения"
+            onChange={(e) =>
+              updateCardsGridItemPropLocal(item.id, field.name, e.target.value)
+            }
+          />
+          <label className="builder-upload-button">
+            Загрузить с компьютера
+            <input
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={(e) =>
+                handleCardsGridItemImageUpload(
+                  item.id,
+                  field.name,
+                  e.target.files?.[0],
+                )
+              }
+            />
+          </label>
+
+          {uploadingField === fieldPath ? (
+            <div className="builder-upload-status">Загрузка...</div>
+          ) : null}
+
+          {previewUrl ? (
+            <div className="builder-image-preview">
+              <img src={previewUrl} alt={`${field.label} preview`} />
+            </div>
+          ) : null}
+        </div>
+      );
+    }
+
+    return (
+      <input
+        className="builder-input"
+        type="text"
+        value={value ?? ""}
+        onChange={(e) =>
+          updateCardsGridItemPropLocal(item.id, field.name, e.target.value)
+        }
+      />
+    );
+  };
+
   if (isLoading) {
     return <div className="builder-empty">Загрузка страницы...</div>;
   }
 
   if (error && !page.id) {
-    return <div className="builder-empty">Ошибка: {error}</div>;
+    return (
+      <div className="builder-empty builder-empty-error">Ошибка: {error}</div>
+    );
   }
 
   return (
     <div className="builder-layout">
       <aside className="builder-sidebar">
         <div className="builder-panel-header">
-          <h2>Структура</h2>
+          <h2>Блоки страницы</h2>
           <button
             type="button"
             className="admin-button admin-button-secondary"
             onClick={() => setIsAddBlockOpen((prev) => !prev)}
           >
-            {isAddBlockOpen ? "Закрыть" : "Добавить"}
+            {isAddBlockOpen ? "Закрыть" : "Добавить блок"}
           </button>
         </div>
 
@@ -600,9 +1265,13 @@ const AdminPageBuilder = () => {
               key={block.id}
               type="button"
               draggable
-              className={`builder-block-item ${
-                selectedBlockId === block.id ? "is-active" : ""
-              } ${draggedBlockId === block.id ? "is-dragging" : ""}`}
+              className={[
+                "builder-block-item",
+                selectedBlockId === block.id ? "is-active" : "",
+                draggedBlockId === block.id ? "is-dragging" : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
               onClick={() => setSelectedBlockId(block.id)}
               onDragStart={() => setDraggedBlockId(block.id)}
               onDragOver={(e) => e.preventDefault()}
@@ -616,7 +1285,6 @@ const AdminPageBuilder = () => {
               onDragEnd={() => setDraggedBlockId(null)}
             >
               <span className="builder-block-index">{index + 1}</span>
-
               <span className="builder-block-content">
                 <span className="builder-block-label">
                   {blockRegistry[block.type]?.label || block.type}
@@ -625,7 +1293,6 @@ const AdminPageBuilder = () => {
                   {block.type} · #{block.sort_order}
                 </span>
               </span>
-
               <span className="builder-block-drag">⋮⋮</span>
             </button>
           ))}
@@ -637,7 +1304,6 @@ const AdminPageBuilder = () => {
           <span className="builder-canvas-badge">
             {page.title || "Страница"} / {page.slug}
           </span>
-
           {isReordering ? (
             <span className="builder-canvas-status">Сохраняем порядок...</span>
           ) : null}
@@ -653,7 +1319,6 @@ const AdminPageBuilder = () => {
       <aside className="builder-settings">
         <div className="builder-panel-header">
           <h2>Настройки</h2>
-
           <div className="builder-settings-actions">
             <button
               type="button"
@@ -661,16 +1326,15 @@ const AdminPageBuilder = () => {
               onClick={handleSaveSelectedBlock}
               disabled={!selectedBlock || isSaving}
             >
-              {isSaving ? "Сохраняем..." : "Сохранить"}
+              {isSaving ? "Сохранение..." : "Сохранить блок"}
             </button>
-
             <button
               type="button"
               className="admin-button admin-button-danger"
               onClick={handleDeleteSelectedBlock}
               disabled={!selectedBlock || isDeletingBlock}
             >
-              {isDeletingBlock ? "Удаляем..." : "Удалить"}
+              {isDeletingBlock ? "Удаление..." : "Удалить блок"}
             </button>
           </div>
         </div>
@@ -683,7 +1347,7 @@ const AdminPageBuilder = () => {
 
             {error ? <p className="builder-error-text">{error}</p> : null}
 
-            {blockRegistry[selectedBlock.type]?.fields?.map((field) => {
+            {selectedBlockConfig?.fields?.map((field) => {
               const value = getFieldValue(selectedBlock, field.name);
 
               return (
@@ -694,67 +1358,162 @@ const AdminPageBuilder = () => {
               );
             })}
 
-            {blockRegistry[selectedBlock.type]?.hasItemsArray ? (
+            {selectedBlock?.type === "cardsGrid" ? (
               <div className="builder-array-group">
                 <div className="builder-array-header">
-                  <h3>Элементы блока</h3>
+                  <h3>Элементы композиции</h3>
+                  <div className="builder-inline-actions">
+                    {Object.entries(cardsGridItemSchemas).map(
+                      ([itemType, schema]) => (
+                        <button
+                          key={itemType}
+                          type="button"
+                          className="admin-button admin-button-secondary"
+                          onClick={() => handleAddCardsGridItem(itemType)}
+                        >
+                          + {schema.label}
+                        </button>
+                      ),
+                    )}
+                  </div>
+                </div>
+
+                {selectedCardsGridItems.length === 0 ? (
+                  <p className="builder-empty-text">
+                    Элементы композиции пока не добавлены.
+                  </p>
+                ) : (
+                  selectedCardsGridItems.map((item, index) => {
+                    const schema = cardsGridItemSchemas[item.item_type];
+                    if (!schema) return null;
+                    const isExpanded = expandedItems[item.id] ?? false;
+
+                    return (
+                      <div key={item.id} className="builder-array-card">
+                        <div className="builder-array-card-header">
+                          <button
+                            type="button"
+                            className="builder-array-card-toggle"
+                            onClick={() => toggleItemExpand(item.id)}
+                          >
+                            {isExpanded ? "▼" : "▶"} {index + 1}. {schema.label}
+                          </button>
+                          <button
+                            type="button"
+                            className="admin-button admin-button-danger-outline"
+                            onClick={() => handleDeleteCardsGridItem(item.id)}
+                          >
+                            Удалить
+                          </button>
+                        </div>
+                        {isExpanded && (
+                          <div className="builder-array-card-content">
+                            {schema.fields.map((field) => (
+                              <div
+                                key={`${item.id}-${field.name}`}
+                                className="builder-field"
+                              >
+                                <label className="builder-label">
+                                  {field.label}
+                                </label>
+                                {renderCardsGridItemFieldInput(item, field)}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            ) : null}
+
+            {selectedBlockConfig?.hasItemsArray ? (
+              <div className="builder-array-group">
+                <div className="builder-array-header">
+                  <h3>Элементы</h3>
                   <button
                     type="button"
                     className="admin-button admin-button-secondary"
-                    onClick={addTextBlockItem}
+                    onClick={() => {
+                      const createItem =
+                        selectedBlockConfig?.createItem || (() => ({}));
+
+                      setPage((prev) => ({
+                        ...prev,
+                        blocks: prev.blocks.map((block) => {
+                          if (block.id !== selectedBlockId) return block;
+
+                          return {
+                            ...block,
+                            props: {
+                              ...block.props,
+                              items: [
+                                ...(block.props.items || []),
+                                createItem(),
+                              ],
+                            },
+                          };
+                        }),
+                      }));
+                    }}
                   >
-                    Добавить пункт
+                    Добавить элемент
                   </button>
                 </div>
 
                 {(selectedBlock.props.items || []).map((item, index) => (
                   <div key={index} className="builder-array-card">
                     <div className="builder-array-card-top">
-                      <p className="builder-array-card-title">
-                        Пункт {index + 1}
-                      </p>
+                      <p className="builder-array-card-title">{index + 1}</p>
                       <button
                         type="button"
                         className="admin-button admin-button-danger-outline"
-                        onClick={() => removeTextBlockItem(index)}
+                        onClick={() => {
+                          setPage((prev) => ({
+                            ...prev,
+                            blocks: prev.blocks.map((block) => {
+                              if (block.id !== selectedBlockId) return block;
+
+                              return {
+                                ...block,
+                                props: {
+                                  ...block.props,
+                                  items: (block.props.items || []).filter(
+                                    (_, itemIndex) => itemIndex !== index,
+                                  ),
+                                },
+                              };
+                            }),
+                          }));
+                        }}
                       >
                         Удалить
                       </button>
                     </div>
 
-                    <div className="builder-field">
-                      <label className="builder-label">Заголовок</label>
-                      <input
-                        className="builder-input"
-                        type="text"
-                        value={item.title || ""}
-                        onChange={(e) =>
-                          updateTextBlockItem(index, "title", e.target.value)
-                        }
-                      />
-                    </div>
+                    {selectedBlockConfig.itemFields?.map((field) => {
+                      const value = item?.[field.name] ?? "";
 
-                    <div className="builder-field">
-                      <label className="builder-label">Описание</label>
-                      <textarea
-                        className="builder-input builder-textarea"
-                        value={item.description || ""}
-                        onChange={(e) =>
-                          updateTextBlockItem(
-                            index,
-                            "description",
-                            e.target.value,
-                          )
-                        }
-                      />
-                    </div>
+                      return (
+                        <div
+                          key={`${index}-${field.name}`}
+                          className="builder-field"
+                        >
+                          <label className="builder-label">{field.label}</label>
+                          {renderLegacyArrayItemFieldInput(index, field, value)}
+                        </div>
+                      );
+                    })}
                   </div>
                 ))}
               </div>
             ) : null}
           </div>
         ) : (
-          <div className="builder-empty">Выбери блок слева</div>
+          <div className="builder-empty">
+            Выбери блок слева, чтобы редактировать его.
+          </div>
         )}
       </aside>
     </div>

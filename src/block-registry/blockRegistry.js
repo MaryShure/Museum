@@ -6,6 +6,8 @@ import FeatureGridBlock from "../blocks/FeatureGridBlock";
 import PromoCardsBlock from "../blocks/PromoCardsBlock";
 import TextBlockBlock from "../blocks/TextBlockBlock";
 import MapBlock from "../blocks/MapBlock";
+import BigCardBlock from "../blocks/BigCardBlock";
+import CardsGridBlock from "../blocks/CardsGridBlock";
 
 export const blockRegistry = {
   hero: {
@@ -63,22 +65,15 @@ export const blockRegistry = {
     label: "Панель карточек",
     component: CardsBarBlock,
     defaultProps: {
-      cardNumbers: [1, 2, 3, 4],
+      selectedPageIds: [],
       buttonPageId: null,
       buttonLinkUrl: "/services",
     },
     fields: [
       {
-        name: "cardNumbers",
-        label: "Показывать карточки",
-        type: "checkbox-group",
-        options: [
-          { label: "Экскурсии", value: 1 },
-          { label: "Расписание", value: 2 },
-          { label: "Мероприятия", value: 3 },
-          { label: "Проживание", value: 4 },
-          { label: "Контакты", value: 5 },
-        ],
+        name: "selectedPageIds",
+        label: "Страницы в панели",
+        type: "page-multi-select",
       },
       {
         name: "buttonPageId",
@@ -241,7 +236,7 @@ export const blockRegistry = {
         type: "text",
       },
 
-      { name: "card2Image", label: "Картинка карточки 2", type: "text" },
+      { name: "card2Image", label: "Картинка карточки 2", type: "image" },
       { name: "card2Title", label: "Заголовок карточки 2", type: "text" },
       {
         name: "card2Description",
@@ -263,13 +258,13 @@ export const blockRegistry = {
 
   textBlock: {
     label: "Текстовый блок",
-    component: TextBlockBlock, // ← ОБЯЗАТЕЛЬНО
+    component: TextBlockBlock,
     defaultProps: {
       minHeight: "300",
       width: "",
       maxWidth: "",
       height: "",
-      items: [], // базовый массив элементов
+      items: [],
     },
     fields: [
       { name: "minHeight", label: "Минимальная высота", type: "text" },
@@ -278,6 +273,10 @@ export const blockRegistry = {
       { name: "height", label: "Высота", type: "text" },
     ],
     hasItemsArray: true,
+    itemFields: [
+      { name: "title", label: "Заголовок", type: "text" },
+      { name: "description", label: "Описание", type: "textarea" },
+    ],
     createItem: () => ({
       title: "Новый заголовок",
       description: "Новое описание",
@@ -289,5 +288,70 @@ export const blockRegistry = {
     component: MapBlock,
     defaultProps: {},
     fields: [],
+  },
+
+  bigCard: {
+    label: "Большая карточка",
+    component: BigCardBlock,
+    defaultProps: {
+      image: "",
+      altText: "Изображение карточки",
+      title: "Заголовок карточки",
+      description: "Описание карточки",
+      buttonType: "",
+      buttonText: "Подробнее",
+      pageId: null,
+      linkUrl: "",
+    },
+    fields: [
+      { name: "image", label: "Изображение", type: "image" },
+      { name: "altText", label: "Alt текст", type: "text" },
+      { name: "title", label: "Заголовок", type: "text" },
+      { name: "description", label: "Описание", type: "textarea" },
+      {
+        name: "buttonType",
+        label: "Тип кнопки",
+        type: "select",
+        options: [
+          { label: "Без кнопки", value: "" },
+          { label: "Primary", value: "primary" },
+          { label: "Secondary", value: "secondary" },
+        ],
+      },
+      { name: "buttonText", label: "Текст кнопки", type: "text" },
+      {
+        name: "pageId",
+        label: "Страница кнопки",
+        type: "page-select",
+      },
+      {
+        name: "linkUrl",
+        label: "Ссылка кнопки (если страница не выбрана)",
+        type: "text",
+      },
+    ],
+  },
+
+  cardsGrid: {
+    label: "Композиционная сетка",
+    component: CardsGridBlock,
+    defaultProps: {
+      showStartText: "yes",
+      title: "Заголовок секции",
+      description: "Описание секции",
+    },
+    fields: [
+      {
+        name: "showStartText",
+        label: "Показывать вступительный текст",
+        type: "select",
+        options: [
+          { label: "Да", value: "yes" },
+          { label: "Нет", value: "no" },
+        ],
+      },
+      { name: "title", label: "Заголовок секции", type: "text" },
+      { name: "description", label: "Описание секции", type: "textarea" },
+    ],
   },
 };

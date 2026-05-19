@@ -95,3 +95,46 @@ export async function uploadImage(file) {
 
   return handleResponse(response);
 }
+
+export async function getCardsGridItems(blockId) {
+  const response = await fetch(`${API_BASE}/blocks/${blockId}/items`);
+  return handleResponse(response);
+}
+
+export async function createCardsGridItem(blockId, payload) {
+  const response = await fetch(`${API_BASE}/blocks/${blockId}/items`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  return handleResponse(response);
+}
+
+export async function updateCardsGridItem(blockId, itemId, payload) {
+  const response = await fetch(
+    `${API_BASE}/blocks/${blockId}/items/${itemId}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    },
+  );
+
+  return handleResponse(response);
+}
+
+export async function deleteCardsGridItem(blockId, itemId) {
+  const response = await fetch(
+    `${API_BASE}/blocks/${blockId}/items/${itemId}`,
+    {
+      method: "DELETE",
+    },
+  );
+
+  return handleResponse(response);
+}

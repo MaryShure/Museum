@@ -9,12 +9,6 @@ import { getSiteSettings } from "../../api/siteSettingsApi";
 import "./header.css";
 import "../map/map.css";
 
-const defaultHeaderConfig = {
-  logoLink: "/",
-  menuItems: [],
-  socials: [],
-};
-
 const resolveUrl = (item) => {
   if (item?.url) return item.url;
   if (item?.page?.route_path) return item.page.route_path;
@@ -28,7 +22,12 @@ const getSocialIcon = (type) => {
 };
 
 const Header = () => {
-  const [config, setConfig] = useState(defaultHeaderConfig);
+  const [config, setConfig] = useState({
+    logoLink: "/",
+    logoUrl: "",
+    menuItems: [],
+    socials: [],
+  });
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [activeDropdownId, setActiveDropdownId] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -39,6 +38,7 @@ const Header = () => {
         const data = await getSiteSettings();
         setConfig({
           logoLink: data.header_config?.logoLink || "/",
+          logoUrl: data.header_config?.logoUrl || "",
           menuItems: data.header_config?.menuItems || [],
           socials: data.header_config?.socials || [],
         });
@@ -90,7 +90,7 @@ const Header = () => {
         onMouseLeave={closeDropdown}
       >
         <Link to={config.logoLink || "/"} className="home-icon">
-          <img src="/logo192.png" alt="Логотип" />
+          <img src={config.logoUrl || "/logo192.png"} alt="Логотип" />
         </Link>
 
         <div className="buttons-bar desktop-menu">
@@ -172,6 +172,18 @@ const Header = () => {
               );
             })}
           </nav>
+
+          <div className="map-content">
+            <hr />
+            <div className="map-text-block">
+              <h2>Адрес</h2>
+              <p>д. Городище, Минский район, ул. Замковая, 1</p>
+            </div>
+            <div className="map-text-block">
+              <h2>Для навигаторов</h2>
+              <p>Введите «Стары Менск» или координаты: 53.8247, 27.3411</p>
+            </div>
+          </div>
 
           <div className="mobile-socials">
             {config.socials.map((social) => (

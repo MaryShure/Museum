@@ -1,49 +1,58 @@
-import React from 'react';
-import './cards.css';
-import PrimaryButton from '../buttons/PrimaryButton';
-import SecondaryButton from '../buttons/SecondaryButton';
+import React from "react";
+import "./cards.css";
+import PrimaryButton from "../buttons/PrimaryButton";
+import SecondaryButton from "../buttons/SecondaryButton";
 
-const BigCard = ({ 
-  image, 
-  title, 
+const BigCard = ({
+  image,
+  title,
   description,
-  buttonType,      // 'primary' | 'secondary' | undefined
-  buttonText, 
+  buttonType,
+  buttonText,
   linkUrl,
-  altText = "Изображение товара" 
+  altText = "",
 }) => {
-    const renderButton = () => {
-        if (buttonType === 'primary') {
-        return <PrimaryButton text={buttonText} linkUrl={linkUrl} />;
-        }
+  console.log("BigCard render", {
+    image,
+    title,
+    description,
+    buttonType,
+    buttonText,
+    linkUrl,
+  });
+  const canRenderButton = buttonType && buttonText && linkUrl;
 
-        if (buttonType === 'secondary') {
-        return <SecondaryButton text={buttonText} linkUrl={linkUrl} />;
-        }
+  const renderButton = () => {
+    if (!canRenderButton) return null;
 
-        return null;
-    };
+    if (buttonType === "primary") {
+      return <PrimaryButton text={buttonText} linkUrl={linkUrl} />;
+    }
+
+    if (buttonType === "secondary") {
+      return <SecondaryButton text={buttonText} linkUrl={linkUrl} />;
+    }
+
+    return null;
+  };
 
   return (
     <div className="big-card">
-        {image && (
-          <div className="big-card-image">
-            <img src={image} alt={altText} />
-          </div>
-        )}
-        
-        <div className="big-card-content">
-          {title && <h3 className="card-title">{title}</h3>}
-          
-          {description && (
-            <p className="card-description">{description}</p>
-          )}
-
-          <div className="big-card-actions">
-          {renderButton()}
-          </div>
-        
+      {image && (
+        <div className="big-card-image">
+          <img src={image} alt={altText || title || "Изображение карточки"} />
         </div>
+      )}
+
+      <div className="big-card-content">
+        {title && <h3 className="card-title">{title}</h3>}
+
+        {description && <p className="card-description">{description}</p>}
+
+        {canRenderButton ? (
+          <div className="big-card-actions">{renderButton()}</div>
+        ) : null}
+      </div>
     </div>
   );
 };

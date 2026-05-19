@@ -129,7 +129,6 @@ const AdminPagesList = () => {
 
   const handleSelectPage = (page) => {
     const normalized = normalizePage(page);
-
     setSelectedPageId(normalized.id);
     setError("");
     setForm({
@@ -310,52 +309,33 @@ const AdminPagesList = () => {
                 className={`builder-block-item ${
                   selectedPageId === page.id ? "is-active" : ""
                 }`}
+                onClick={() => handleSelectPage(page)}
                 style={{
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "stretch",
                   gap: 12,
+                  cursor: "pointer",
                 }}
               >
-                <button
-                  type="button"
-                  className="builder-block-label"
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "stretch",
-                    gap: 12,
-                    textAlign: "left",
-                    width: "100%",
-                  }}
-                  onClick={() => handleSelectPage(page)}
-                >
-                  {previewUrl ? (
-                    <div
-                      className="builder-image-preview"
-                      style={{ width: "100%", maxWidth: "100%" }}
-                    >
+                <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                  {previewUrl && (
+                    <div className="builder-page-preview">
                       <img src={previewUrl} alt={page.title} />
                     </div>
-                  ) : (
-                    <div className="builder-hint">Нет превью</div>
                   )}
-
-                  <div
-                    style={{ display: "flex", gap: 12, alignItems: "center" }}
-                  >
-                    <span className="builder-block-index">#</span>
-                    <span>
-                      <strong>{page.title}</strong>
-                      <br />
-                      <span className="builder-hint">
-                        {page.slug} · {page.route_path}
-                      </span>
-                    </span>
+                  <div>
+                    <strong>{page.title}</strong>
+                    <div className="builder-hint">
+                      {page.slug} · {page.route_path}
+                    </div>
                   </div>
-                </button>
+                </div>
 
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <div
+                  style={{ display: "flex", gap: 8, flexWrap: "wrap" }}
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <button
                     type="button"
                     className="admin-button admin-button-secondary"
@@ -363,7 +343,6 @@ const AdminPagesList = () => {
                   >
                     Открыть блоки
                   </button>
-
                   <button
                     type="button"
                     className="admin-button admin-button-ghost danger"
@@ -559,7 +538,7 @@ const AdminPagesList = () => {
           </p>
           <p className="builder-settings-type">
             Превью можно использовать в карточках страниц, меню или списках
-            разделов. [web:348]
+            разделов.
           </p>
         </div>
       </aside>
