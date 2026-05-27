@@ -76,6 +76,7 @@ const AdminPagesList = () => {
 
       if (selectedPageId) {
         const stillSelected = list.find((page) => page.id === selectedPageId);
+
         if (stillSelected) {
           setForm({
             id: stillSelected.id,
@@ -164,11 +165,11 @@ const AdminPagesList = () => {
       };
 
       const created = await createPage(payload);
-
       setForm(emptyForm);
-      const list = await loadPages(false);
 
+      const list = await loadPages(false);
       const createdPage = list.find((page) => page.id === created.id);
+
       if (createdPage) {
         handleSelectPage(createdPage);
       }
@@ -259,7 +260,6 @@ const AdminPagesList = () => {
     try {
       setIsUploadingImage(true);
       setError("");
-
       const result = await uploadImage(file);
       handleChange("preview_image", `${API_ORIGIN}${result.url}`);
     } catch (err) {
@@ -280,268 +280,277 @@ const AdminPagesList = () => {
   };
 
   if (isLoading) {
-    return <div className="builder-empty">Загрузка страниц...</div>;
+    return <div className="builder-empty">Загрузка...</div>;
   }
 
   return (
-    <div className="builder-layout">
-      <aside className="builder-sidebar">
-        <div className="builder-panel-header">
-          <h2>Страницы</h2>
-          <button
-            type="button"
-            className="admin-button admin-button-secondary"
-            onClick={handleResetForm}
-          >
-            Новая
-          </button>
-        </div>
-
-        {error ? <p className="builder-error-text">{error}</p> : null}
-
-        <div className="builder-block-list">
-          {pages.map((page) => {
-            const previewUrl = resolveMediaUrl(page.preview_image);
-
-            return (
-              <div
-                key={page.id}
-                className={`builder-block-item ${
-                  selectedPageId === page.id ? "is-active" : ""
-                }`}
-                onClick={() => handleSelectPage(page)}
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "stretch",
-                  gap: 12,
-                  cursor: "pointer",
-                }}
-              >
-                <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                  {previewUrl && (
-                    <div className="builder-page-preview">
-                      <img src={previewUrl} alt={page.title} />
-                    </div>
-                  )}
-                  <div>
-                    <strong>{page.title}</strong>
-                    <div className="builder-hint">
-                      {page.slug} · {page.route_path}
-                    </div>
-                  </div>
-                </div>
-
-                <div
-                  style={{ display: "flex", gap: 8, flexWrap: "wrap" }}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <button
-                    type="button"
-                    className="admin-button admin-button-secondary"
-                    onClick={() => navigate(`/admin/${page.slug}`)}
-                  >
-                    Открыть блоки
-                  </button>
-                  <button
-                    type="button"
-                    className="admin-button admin-button-ghost danger"
-                    onClick={() => handleDeletePage(page.id, page.slug)}
-                  >
-                    Удалить
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </aside>
-
-      <section className="builder-canvas">
-        <div className="builder-canvas-toolbar">
-          <span className="builder-canvas-badge">
-            {form.id ? "Редактирование страницы" : "Создание страницы"}
-          </span>
-
-          <NavLink
-            to="/admin/layout"
-            className="admin-button admin-button-secondary"
-            style={{ textDecoration: "none" }}
-          >
-            Редактировать Header/Footer
-          </NavLink>
-        </div>
-
-        <div className="builder-canvas-scroll">
-          <div className="builder-preview-frame" style={{ padding: 24 }}>
-            <h2 style={{ marginBottom: 16 }}>
-              {form.id ? "Данные страницы" : "Создать новую страницу"}
-            </h2>
-
-            <form
-              onSubmit={handleCreatePage}
-              className="builder-settings-body"
-              style={{ maxWidth: 640 }}
+    <div className="admin-page-root">
+      <div className="builder-layout">
+        <aside className="builder-sidebar">
+          <div className="builder-panel-header">
+            <h2>Страницы</h2>
+            <button
+              type="button"
+              className="admin-button admin-button-secondary"
+              onClick={handleResetForm}
             >
-              <div className="builder-field">
-                <label className="builder-label">Название страницы</label>
-                <input
-                  className="builder-input"
-                  type="text"
-                  value={form.title}
-                  onChange={(e) => handleChange("title", e.target.value)}
-                  placeholder="Например: Мероприятия"
-                />
-              </div>
+              Новая
+            </button>
+          </div>
 
-              <div className="builder-field">
-                <label className="builder-label">Slug</label>
-                <input
-                  className="builder-input"
-                  type="text"
-                  value={form.slug}
-                  onChange={(e) => {
-                    const nextSlug = e.target.value;
-                    handleChange("slug", nextSlug);
+          {error ? <p className="builder-error-text">{error}</p> : null}
 
-                    if (!form.id) {
-                      handleChange("route_path", buildRoutePath(nextSlug));
-                    }
+          <div className="builder-block-list">
+            {pages.map((page) => {
+              const previewUrl = resolveMediaUrl(page.preview_image);
+
+              return (
+                <div
+                  key={page.id}
+                  className={`builder-block-item ${
+                    selectedPageId === page.id ? "is-active" : ""
+                  }`}
+                  onClick={() => handleSelectPage(page)}
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "stretch",
+                    gap: 12,
+                    cursor: "pointer",
                   }}
-                  placeholder="Например: events"
-                />
-              </div>
-
-              <div className="builder-field">
-                <label className="builder-label">Route path</label>
-                <input
-                  className="builder-input"
-                  type="text"
-                  value={form.route_path}
-                  onChange={(e) => handleChange("route_path", e.target.value)}
-                  placeholder="/events"
-                />
-                <p className="builder-hint">
-                  Итоговый путь:{" "}
-                  {form.route_path || buildRoutePath(form.slug) || "/slug"}
-                </p>
-              </div>
-
-              <div className="builder-field">
-                <label className="builder-label">Статус</label>
-                <select
-                  className="builder-input"
-                  value={form.status}
-                  onChange={(e) => handleChange("status", e.target.value)}
                 >
-                  <option value="draft">draft</option>
-                  <option value="published">published</option>
-                  <option value="archived">archived</option>
-                </select>
-              </div>
-
-              <div className="builder-field">
-                <label className="builder-label">Тип страницы</label>
-                <select
-                  className="builder-input"
-                  value={form.page_type}
-                  onChange={(e) => handleChange("page_type", e.target.value)}
-                >
-                  <option value="custom">custom</option>
-                  <option value="system">system</option>
-                </select>
-              </div>
-
-              <div className="builder-field">
-                <label className="builder-label">Превью страницы</label>
-                <input
-                  className="builder-input"
-                  type="text"
-                  value={form.preview_image}
-                  onChange={(e) =>
-                    handleChange("preview_image", e.target.value)
-                  }
-                  placeholder="URL изображения"
-                />
-
-                <label
-                  className="builder-upload-button"
-                  style={{ marginTop: 12 }}
-                >
-                  Загрузить с компьютера
-                  <input
-                    type="file"
-                    accept="image/*"
-                    style={{ display: "none" }}
-                    onChange={(e) => handlePreviewUpload(e.target.files?.[0])}
-                  />
-                </label>
-
-                {isUploadingImage ? (
-                  <div className="builder-upload-status">Загрузка...</div>
-                ) : null}
-
-                {form.preview_image ? (
                   <div
-                    className="builder-image-preview"
-                    style={{ marginTop: 12, maxWidth: 360 }}
+                    style={{ display: "flex", gap: 12, alignItems: "center" }}
                   >
-                    <img
-                      src={resolveMediaUrl(form.preview_image)}
-                      alt="Превью страницы"
-                    />
+                    {previewUrl ? (
+                      <div className="builder-page-preview">
+                        <img src={previewUrl} alt={page.title} />
+                      </div>
+                    ) : null}
+
+                    <div>
+                      <strong>{page.title}</strong>
+                      <div className="builder-block-meta">
+                        {page.slug} · {page.route_path}
+                      </div>
+                    </div>
                   </div>
-                ) : null}
-              </div>
 
-              <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                <button
-                  type="submit"
-                  className="admin-button admin-button-primary"
-                  disabled={isCreating}
-                >
-                  {isCreating ? "Создание..." : "Создать страницу"}
-                </button>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    <button
+                      type="button"
+                      className="admin-button admin-button-secondary"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/admin/${page.slug}`);
+                      }}
+                    >
+                      Редактировать блоки
+                    </button>
 
-                <button
-                  type="button"
-                  className="admin-button admin-button-secondary"
-                  onClick={handleSavePage}
-                  disabled={!form.id || isSaving}
-                >
-                  {isSaving ? "Сохранение..." : "Сохранить изменения"}
-                </button>
+                    <button
+                      type="button"
+                      className="admin-button admin-button-ghost danger"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeletePage(page.id, page.slug);
+                      }}
+                    >
+                      Удалить
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </aside>
 
-                {selectedPage ? (
+        <section className="builder-canvas">
+          <div className="builder-canvas-toolbar">
+            <span className="builder-canvas-badge">
+              {form.id ? "Редактирование страницы" : "Создание страницы"}
+            </span>
+            <div className="builder-canvas-status">
+              Базовые настройки страницы
+            </div>
+          </div>
+
+          <div className="builder-canvas-scroll">
+            <div className="builder-preview-frame" style={{ padding: 24 }}>
+              <h2 style={{ marginBottom: 16 }}>
+                {form.id ? "Настройки страницы" : "Новая страница"}
+              </h2>
+
+              <form
+                onSubmit={handleCreatePage}
+                className="builder-settings-body"
+                style={{ maxWidth: 640 }}
+              >
+                <div className="builder-field">
+                  <label className="builder-label">Название</label>
+                  <input
+                    className="builder-input"
+                    type="text"
+                    value={form.title}
+                    onChange={(e) => handleChange("title", e.target.value)}
+                    placeholder="Главная"
+                  />
+                </div>
+
+                <div className="builder-field">
+                  <label className="builder-label">Slug</label>
+                  <input
+                    className="builder-input"
+                    type="text"
+                    value={form.slug}
+                    onChange={(e) => {
+                      const nextSlug = e.target.value;
+                      handleChange("slug", nextSlug);
+                      if (!form.id) {
+                        handleChange("route_path", buildRoutePath(nextSlug));
+                      }
+                    }}
+                    placeholder="main"
+                  />
+                </div>
+
+                <div className="builder-field">
+                  <label className="builder-label">Route path</label>
+                  <input
+                    className="builder-input"
+                    type="text"
+                    value={form.route_path}
+                    onChange={(e) => handleChange("route_path", e.target.value)}
+                    placeholder="/"
+                  />
+                  <p className="builder-help-text">
+                    Если оставить пустым при создании, путь соберётся из slug.
+                  </p>
+                </div>
+
+                <div className="builder-field">
+                  <label className="builder-label">Статус</label>
+                  <select
+                    className="builder-input"
+                    value={form.status}
+                    onChange={(e) => handleChange("status", e.target.value)}
+                  >
+                    <option value="draft">draft</option>
+                    <option value="published">published</option>
+                    <option value="archived">archived</option>
+                  </select>
+                </div>
+
+                <div className="builder-field">
+                  <label className="builder-label">Тип страницы</label>
+                  <select
+                    className="builder-input"
+                    value={form.page_type}
+                    onChange={(e) => handleChange("page_type", e.target.value)}
+                  >
+                    <option value="custom">custom</option>
+                    <option value="system">system</option>
+                  </select>
+                </div>
+
+                <div className="builder-field">
+                  <label className="builder-label">Preview image</label>
+                  <input
+                    className="builder-input"
+                    type="text"
+                    value={form.preview_image}
+                    onChange={(e) =>
+                      handleChange("preview_image", e.target.value)
+                    }
+                    placeholder="URL изображения"
+                  />
+
+                  <label
+                    className="builder-upload-button"
+                    style={{ marginTop: 12 }}
+                  >
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ display: "none" }}
+                      onChange={(e) => handlePreviewUpload(e.target.files?.[0])}
+                    />
+                    Загрузить изображение
+                  </label>
+
+                  {isUploadingImage ? (
+                    <div className="builder-upload-status">Загрузка...</div>
+                  ) : null}
+
+                  {form.preview_image ? (
+                    <div
+                      className="builder-image-preview"
+                      style={{ marginTop: 12, maxWidth: 360 }}
+                    >
+                      <img
+                        src={resolveMediaUrl(form.preview_image)}
+                        alt="Preview"
+                      />
+                    </div>
+                  ) : null}
+                </div>
+
+                <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                  <button
+                    type="submit"
+                    className="admin-button admin-button-primary"
+                    disabled={isCreating}
+                  >
+                    {isCreating ? "Создание..." : "Создать страницу"}
+                  </button>
+
                   <button
                     type="button"
                     className="admin-button admin-button-secondary"
-                    onClick={() => navigate(`/admin/${selectedPage.slug}`)}
+                    onClick={handleSavePage}
+                    disabled={!form.id || isSaving}
                   >
-                    Перейти к блокам
+                    {isSaving ? "Сохранение..." : "Сохранить"}
                   </button>
-                ) : null}
-              </div>
-            </form>
+
+                  {selectedPage ? (
+                    <button
+                      type="button"
+                      className="admin-button admin-button-secondary"
+                      onClick={() => navigate(`/admin/${selectedPage.slug}`)}
+                    >
+                      Перейти к блокам
+                    </button>
+                  ) : null}
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <aside className="builder-settings">
-        <div className="builder-panel-header">
-          <h2>Подсказки</h2>
-        </div>
+        <aside className="builder-settings">
+          <div className="builder-panel-header">
+            <h2>Подсказка</h2>
+          </div>
 
-        <div className="builder-settings-body">
-          <p className="builder-settings-type">
-            Выбери страницу слева, чтобы отредактировать её данные.
-          </p>
-          <p className="builder-settings-type">
-            Превью можно использовать в карточках страниц, меню или списках
-            разделов.
-          </p>
-        </div>
-      </aside>
+          <div className="builder-settings-body">
+            <p className="builder-settings-type">
+              Здесь ты задаёшь базовые параметры страницы: название, slug,
+              конечный URL, статус и превью.
+            </p>
+
+            <p className="builder-settings-type">
+              После сохранения можно перейти в редактор блоков и наполнить
+              страницу контентом.
+            </p>
+
+            <p className="builder-settings-type">
+              Для бронирований теперь доступны отдельные разделы сверху:
+              «Календарь» и «Заявки».
+            </p>
+          </div>
+        </aside>
+      </div>
     </div>
   );
 };

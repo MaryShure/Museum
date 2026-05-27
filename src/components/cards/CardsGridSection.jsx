@@ -21,8 +21,8 @@ const ImageCell = ({
   };
 
   return (
-    <div className="cards-grid-image-cell" style={style}>
-      {image ? <img src={image} alt={altText} /> : null}
+    <div className="image-cell" style={style}>
+      {image && <img src={image} alt={altText} />}
     </div>
   );
 };
@@ -46,8 +46,8 @@ const TextCell = ({
 
   return (
     <div className="cards-grid-text-cell" style={style}>
-      {title ? <h3>{title}</h3> : null}
-      {description ? <p>{description}</p> : null}
+      {title && <h3>{title}</h3>}
+      {description && <p>{description}</p>}
     </div>
   );
 };
@@ -70,7 +70,6 @@ const renderItem = (item) => {
           />
         );
       }
-
       return (
         <Card
           image={data.image}
@@ -138,10 +137,9 @@ const CardsGridSection = ({
 
   return (
     <section className="cards-grid-section">
-      {showStartText && (title || description) ? (
+      {showStartText && (title || description) && (
         <StartText title={title} description={description} />
-      ) : null}
-
+      )}
       <div className="cards-grid">
         {sortedItems.map((item) => (
           <React.Fragment key={item.id}>{renderItem(item)}</React.Fragment>

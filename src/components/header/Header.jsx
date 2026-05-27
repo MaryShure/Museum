@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import MenuButton from "../buttons/MenuButton";
 import DotIcon from "../../assets/icons/DotIcon";
@@ -31,6 +31,7 @@ const Header = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [activeDropdownId, setActiveDropdownId] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const closeTimeoutRef = useRef(null);
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -46,7 +47,6 @@ const Header = () => {
         console.error("Не удалось загрузить настройки header", error);
       }
     };
-
     loadSettings();
   }, []);
 
@@ -65,14 +65,53 @@ const Header = () => {
     [config.menuItems, activeDropdownId],
   );
 
+  const clearCloseTimeout = () => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+  };
+
   const openDropdown = (itemId) => {
+    clearCloseTimeout();
     setActiveDropdownId(itemId);
     setIsDropdownOpen(true);
   };
 
   const closeDropdown = () => {
+    clearCloseTimeout();
     setActiveDropdownId(null);
     setIsDropdownOpen(false);
+  };
+
+  const scheduleClose = () => {
+    clearCloseTimeout();
+    closeTimeoutRef.current = setTimeout(() => {
+      closeDropdown();
+    }, 200);
+  };
+
+  // Обработчики для хедера
+  const handleHeaderMouseLeave = () => {
+    scheduleClose();
+  };
+
+  // Обработчик для пункта меню
+  const handleMenuItemMouseEnter = (item, hasDropdown) => {
+    if (hasDropdown) {
+      openDropdown(item.id);
+    } else {
+      closeDropdown();
+    }
+  };
+
+  // Обработчики для дропдауна
+  const handleDropdownMouseEnter = () => {
+    clearCloseTimeout(); // Отменяем запланированное закрытие
+  };
+
+  const handleDropdownMouseLeave = () => {
+    scheduleClose(); // Планируем закрытие
   };
 
   const closeMobileMenu = () => {
@@ -87,7 +126,7 @@ const Header = () => {
     <>
       <header
         className={`header ${isDropdownOpen ? "has-dropdown-open" : ""}`}
-        onMouseLeave={closeDropdown}
+        onMouseLeave={handleHeaderMouseLeave}
       >
         <Link to={config.logoLink || "/"} className="home-icon">
           <img src={config.logoUrl || "/logo192.png"} alt="Логотип" />
@@ -103,13 +142,7 @@ const Header = () => {
               <div
                 key={item.id}
                 className="menu-item"
-                onMouseEnter={() => {
-                  if (hasDropdown) {
-                    openDropdown(item.id);
-                  } else {
-                    closeDropdown();
-                  }
-                }}
+                onMouseEnter={() => handleMenuItemMouseEnter(item, hasDropdown)}
               >
                 <MenuButton
                   text={item.label}
@@ -154,6 +187,8 @@ const Header = () => {
         <DropdownMenu
           isOpen={isDropdownOpen}
           items={activeDropdown?.dropdownItems || []}
+          onMouseEnter={handleDropdownMouseEnter}
+          onMouseLeave={handleDropdownMouseLeave}
         />
       </header>
 
@@ -164,7 +199,6 @@ const Header = () => {
           <nav className="mobile-menu-nav">
             {config.menuItems.map((item) => {
               const linkUrl = resolveUrl(item);
-
               return (
                 <Link key={item.id} to={linkUrl} onClick={closeMobileMenu}>
                   <MenuButton text={item.label} />

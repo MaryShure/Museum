@@ -8,6 +8,7 @@ import TextBlockBlock from "../blocks/TextBlockBlock";
 import MapBlock from "../blocks/MapBlock";
 import BigCardBlock from "../blocks/BigCardBlock";
 import CardsGridBlock from "../blocks/CardsGridBlock";
+import BookingCalendarBlock from "../blocks/BookingCalendarBlock";
 
 export const blockRegistry = {
   hero: {
@@ -352,6 +353,30 @@ export const blockRegistry = {
       },
       { name: "title", label: "Заголовок секции", type: "text" },
       { name: "description", label: "Описание секции", type: "textarea" },
+    ],
+  },
+
+  bookingCalendar: {
+    label: "Календарь бронирования",
+    component: BookingCalendarBlock,
+    defaultProps: {
+      title: "Выберите дату экскурсии",
+      description:
+        "Сначала выберите тип мероприятия, затем дату и время. Подтверждение продолжится в Telegram.",
+      defaultExcursionTypeId: "",
+      minPeople: 1,
+      maxPeople: 10,
+    },
+    fields: [
+      { name: "title", label: "Заголовок", type: "text" },
+      { name: "description", label: "Описание", type: "textarea" },
+      {
+        name: "defaultExcursionTypeId",
+        label: "ID типа по умолчанию",
+        type: "text",
+      },
+      { name: "minPeople", label: "Минимум человек", type: "text" },
+      { name: "maxPeople", label: "Максимум человек", type: "text" },
     ],
   },
 };

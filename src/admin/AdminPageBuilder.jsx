@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
-import PageRenderer from "../renderer/PageRenderer";
+import PreviewFrame from "./PreviewFrame";
 import { blockRegistry } from "../block-registry/blockRegistry";
 import {
   getPageBySlug,
@@ -92,7 +92,7 @@ const cardsGridItemSchemas = {
     defaultProps: {
       title: "",
       description: "",
-      buttonType: "primary",
+      buttonType: "", // теперь пустая строка = без кнопки
       buttonText: "",
       pageId: null,
       linkUrl: "",
@@ -109,6 +109,7 @@ const cardsGridItemSchemas = {
         label: "Тип кнопки",
         type: "select",
         options: [
+          { label: "Без кнопки", value: "" },
           { label: "Primary", value: "primary" },
           { label: "Secondary", value: "secondary" },
         ],
@@ -201,8 +202,8 @@ const AdminPageBuilder = () => {
   const [pages, setPages] = useState([]);
   const [draggedBlockId, setDraggedBlockId] = useState(null);
   const [uploadingField, setUploadingField] = useState("");
-  // Состояние для свёрнутых/развёрнутых карточек в cardsGrid
   const [expandedItems, setExpandedItems] = useState({});
+  const [previewWidth, setPreviewWidth] = useState(1280);
 
   const { slug = "main" } = useParams();
 
@@ -219,15 +220,12 @@ const AdminPageBuilder = () => {
     };
 
     setPage(normalizedPage);
-
-    // Сброс состояния свёрнутых карточек для нового блока
     setExpandedItems({});
 
     if (preserveSelection) {
       const stillExists = normalizedPage.blocks.some(
         (block) => block.id === selectedBlockId,
       );
-
       if (stillExists) {
         setSelectedBlockId(selectedBlockId);
       } else {
@@ -252,7 +250,6 @@ const AdminPageBuilder = () => {
         setIsLoading(false);
       }
     };
-
     loadPage();
   }, [slug]);
 
@@ -265,7 +262,6 @@ const AdminPageBuilder = () => {
         console.error("Не удалось загрузить список страниц", err);
       }
     };
-
     loadPages();
   }, []);
 
@@ -292,7 +288,6 @@ const AdminPageBuilder = () => {
       card2PageId: "card2LinkUrl",
       pageId: "linkUrl",
     };
-
     return linkedUrlFieldMap[pageFieldName] || null;
   };
 
@@ -306,7 +301,6 @@ const AdminPageBuilder = () => {
           const index = Number(field.split(".")[1]);
           const nextImages = [...(block.props.images || [])];
           nextImages[index] = value;
-
           return {
             ...block,
             props: {
@@ -320,16 +314,11 @@ const AdminPageBuilder = () => {
           const [, indexStr, key] = field.split(".");
           const index = Number(indexStr);
           const nextItems = [...(block.props.items || [])];
-
-          if (!nextItems[index]) {
-            nextItems[index] = {};
-          }
-
+          if (!nextItems[index]) nextItems[index] = {};
           nextItems[index] = {
             ...nextItems[index],
             [key]: value,
           };
-
           return {
             ...block,
             props: {
@@ -352,27 +341,21 @@ const AdminPageBuilder = () => {
 
   const updatePageSelectProp = (pageFieldName, pageIdValue) => {
     const pageId = pageIdValue ? Number(pageIdValue) : null;
-
     setPage((prev) => ({
       ...prev,
       blocks: prev.blocks.map((block) => {
         if (block.id !== selectedBlockId) return block;
-
         const nextProps = {
           ...block.props,
           [pageFieldName]: pageId,
         };
-
         const urlFieldName = getLinkedUrlFieldName(pageFieldName);
-
         if (urlFieldName) {
           const selectedPage = pages.find((p) => Number(p.id) === pageId);
-
           nextProps[urlFieldName] = selectedPage
             ? selectedPage.route_path || `/${selectedPage.slug}`
             : "";
         }
-
         return {
           ...block,
           props: nextProps,
@@ -386,15 +369,12 @@ const AdminPageBuilder = () => {
       ...prev,
       blocks: prev.blocks.map((block) => {
         if (block.id !== selectedBlockId) return block;
-
         const currentValues = Array.isArray(block.props[fieldName])
           ? block.props[fieldName]
           : [];
-
         const nextValues = checked
           ? [...new Set([...currentValues, optionValue])]
           : currentValues.filter((value) => value !== optionValue);
-
         return {
           ...block,
           props: {
@@ -406,20 +386,15 @@ const AdminPageBuilder = () => {
     }));
   };
 
-  // Сохраняем выбранный блок (его props и все элементы cardsGrid)
   const handleSaveSelectedBlock = async () => {
     if (!selectedBlock) return;
-
     try {
       setIsSaving(true);
       setError("");
-
-      // 1. Сохраняем сам блок (props, is_visible)
       const updated = await updateBlock(selectedBlock.id, {
         props: selectedBlock.props,
         is_visible: selectedBlock.is_visible ?? true,
       });
-
       const normalizedUpdatedBlock = normalizeBlock(
         {
           ...selectedBlock,
@@ -427,7 +402,6 @@ const AdminPageBuilder = () => {
         },
         selectedBlock.sort_order,
       );
-
       setPage((prev) => ({
         ...prev,
         blocks: sortBlocks(
@@ -442,8 +416,6 @@ const AdminPageBuilder = () => {
           ),
         ),
       }));
-
-      // 2. Если это cardsGrid – сохраняем все его элементы
       if (selectedBlock.type === "cardsGrid") {
         const items = selectedCardsGridItems;
         if (items.length > 0) {
@@ -466,21 +438,17 @@ const AdminPageBuilder = () => {
 
   const handleAddBlock = async (blockType) => {
     if (!page.id) return;
-
     const registryEntry = blockRegistry[blockType];
     if (!registryEntry) return;
-
     try {
       setIsCreatingBlock(true);
       setError("");
-
       await createBlock({
         page_id: page.id,
         block_code: blockType,
         is_visible: true,
         props: registryEntry.defaultProps ?? {},
       });
-
       const updatedPage = await reloadPage(false);
       setSelectedBlockId(updatedPage.blocks.at(-1)?.id ?? null);
       setIsAddBlockOpen(false);
@@ -493,17 +461,13 @@ const AdminPageBuilder = () => {
 
   const handleDeleteSelectedBlock = async () => {
     if (!selectedBlock) return;
-
     const confirmed = window.confirm(
       `Удалить блок "${blockRegistry[selectedBlock.type]?.label || selectedBlock.type}"?`,
     );
-
     if (!confirmed) return;
-
     try {
       setIsDeletingBlock(true);
       setError("");
-
       await deleteBlock(selectedBlock.id);
       const updatedPage = await reloadPage(false);
       setSelectedBlockId(updatedPage.blocks[0]?.id ?? null);
@@ -516,39 +480,24 @@ const AdminPageBuilder = () => {
 
   const handleMoveBlock = async (fromIndex, toIndex) => {
     if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) return;
-
     const reordered = reorderList(page.blocks, fromIndex, toIndex);
     const previousBlocks = page.blocks;
-
-    setPage((prev) => ({
-      ...prev,
-      blocks: reordered,
-    }));
-
+    setPage((prev) => ({ ...prev, blocks: reordered }));
     try {
       setIsReordering(true);
       setError("");
-
       await Promise.all(
         reordered.map((block, index) =>
-          updateBlock(block.id, {
-            sort_order: 1000 + index,
-          }),
+          updateBlock(block.id, { sort_order: 1000 + index }),
         ),
       );
-
       await Promise.all(
         reordered.map((block) =>
-          updateBlock(block.id, {
-            sort_order: block.sort_order,
-          }),
+          updateBlock(block.id, { sort_order: block.sort_order }),
         ),
       );
     } catch (err) {
-      setPage((prev) => ({
-        ...prev,
-        blocks: previousBlocks,
-      }));
+      setPage((prev) => ({ ...prev, blocks: previousBlocks }));
       setError(err.message || "Не удалось изменить порядок блоков");
     } finally {
       setIsReordering(false);
@@ -558,11 +507,9 @@ const AdminPageBuilder = () => {
 
   const handleImageUpload = async (fieldName, file) => {
     if (!file) return;
-
     try {
       setUploadingField(fieldName);
       setError("");
-
       const result = await uploadImage(file);
       updateBlockProp(fieldName, `${API_ORIGIN}${result.url}`);
     } catch (err) {
@@ -572,13 +519,11 @@ const AdminPageBuilder = () => {
     }
   };
 
-  // Локальное обновление пропсов элемента cardsGrid
   const updateCardsGridItemPropLocal = (itemId, fieldName, value) => {
     setPage((prev) => ({
       ...prev,
       blocks: prev.blocks.map((block) => {
         if (block.id !== selectedBlockId) return block;
-
         return {
           ...block,
           items: (block.items || []).map((item) =>
@@ -605,12 +550,10 @@ const AdminPageBuilder = () => {
     const pageId = pageIdValue ? Number(pageIdValue) : null;
     const urlFieldName = getLinkedUrlFieldName(pageFieldName);
     const selectedPageData = pages.find((p) => Number(p.id) === pageId);
-
     setPage((prev) => ({
       ...prev,
       blocks: prev.blocks.map((block) => {
         if (block.id !== selectedBlockId) return block;
-
         return {
           ...block,
           items: (block.items || []).map((item) =>
@@ -639,24 +582,19 @@ const AdminPageBuilder = () => {
 
   const handleAddCardsGridItem = async (itemType) => {
     if (!selectedBlock || selectedBlock.type !== "cardsGrid") return;
-
     const schema = cardsGridItemSchemas[itemType];
     if (!schema) return;
-
     try {
       setError("");
-
       const created = await createCardsGridItem(selectedBlock.id, {
         item_type: itemType,
         props: schema.defaultProps,
         is_visible: true,
       });
-
       setPage((prev) => ({
         ...prev,
         blocks: prev.blocks.map((block) => {
           if (block.id !== selectedBlockId) return block;
-
           return {
             ...block,
             items: [...(block.items || []), created].sort(
@@ -665,8 +603,6 @@ const AdminPageBuilder = () => {
           };
         }),
       }));
-
-      // По умолчанию новую карточку раскрываем
       setExpandedItems((prev) => ({ ...prev, [created.id]: true }));
     } catch (err) {
       setError(err.message || "Не удалось добавить элемент композиции");
@@ -675,27 +611,21 @@ const AdminPageBuilder = () => {
 
   const handleDeleteCardsGridItem = async (itemId) => {
     if (!selectedBlock || selectedBlock.type !== "cardsGrid") return;
-
     const confirmed = window.confirm("Удалить элемент композиции?");
     if (!confirmed) return;
-
     try {
       setError("");
       await deleteCardsGridItem(selectedBlock.id, itemId);
-
       setPage((prev) => ({
         ...prev,
         blocks: prev.blocks.map((block) => {
           if (block.id !== selectedBlockId) return block;
-
           return {
             ...block,
             items: (block.items || []).filter((item) => item.id !== itemId),
           };
         }),
       }));
-
-      // Удаляем состояние свёрнутости
       setExpandedItems((prev) => {
         const newState = { ...prev };
         delete newState[itemId];
@@ -708,13 +638,10 @@ const AdminPageBuilder = () => {
 
   const handleCardsGridItemImageUpload = async (itemId, fieldName, file) => {
     if (!file) return;
-
     const fullFieldName = `cards-grid-item-${itemId}-${fieldName}`;
-
     try {
       setUploadingField(fullFieldName);
       setError("");
-
       const result = await uploadImage(file);
       updateCardsGridItemPropLocal(
         itemId,
@@ -742,7 +669,6 @@ const AdminPageBuilder = () => {
         />
       );
     }
-
     if (field.type === "select") {
       return (
         <select
@@ -758,7 +684,6 @@ const AdminPageBuilder = () => {
         </select>
       );
     }
-
     if (field.type === "page-select") {
       return (
         <select
@@ -775,10 +700,8 @@ const AdminPageBuilder = () => {
         </select>
       );
     }
-
     if (field.type === "page-multi-select") {
       const currentValues = Array.isArray(value) ? value.map(Number) : [];
-
       return (
         <div className="builder-checkbox-group">
           {pages.map((p) => (
@@ -790,7 +713,6 @@ const AdminPageBuilder = () => {
                   const nextValues = e.target.checked
                     ? [...new Set([...currentValues, Number(p.id)])]
                     : currentValues.filter((id) => id !== Number(p.id));
-
                   updateBlockProp(field.name, nextValues);
                 }}
               />
@@ -802,10 +724,8 @@ const AdminPageBuilder = () => {
         </div>
       );
     }
-
     if (field.type === "checkbox-group") {
       const currentValues = Array.isArray(value) ? value : [];
-
       return (
         <div className="builder-checkbox-group">
           {field.options?.map((option) => (
@@ -830,10 +750,8 @@ const AdminPageBuilder = () => {
         </div>
       );
     }
-
     if (field.type === "image") {
       const previewUrl = resolveMediaUrl(value);
-
       return (
         <div className="builder-image-field">
           <input
@@ -854,20 +772,17 @@ const AdminPageBuilder = () => {
               }
             />
           </label>
-
-          {uploadingField === field.name ? (
+          {uploadingField === field.name && (
             <div className="builder-upload-status">Загрузка...</div>
-          ) : null}
-
-          {previewUrl ? (
+          )}
+          {previewUrl && (
             <div className="builder-image-preview">
               <img src={previewUrl} alt={`${field.label} preview`} />
             </div>
-          ) : null}
+          )}
         </div>
       );
     }
-
     return (
       <input
         className="builder-input"
@@ -880,48 +795,33 @@ const AdminPageBuilder = () => {
 
   const renderLegacyArrayItemFieldInput = (itemIndex, field, value) => {
     const fieldPath = `items.${itemIndex}.${field.name}`;
-
     const updateArrayItem = (index, key, nextValue) => {
       updateBlockProp(`items.${index}.${key}`, nextValue);
     };
-
     const updateItemPageSelectProp = (index, pageFieldName, pageIdValue) => {
       const pageId = pageIdValue ? Number(pageIdValue) : null;
-
       setPage((prev) => ({
         ...prev,
         blocks: prev.blocks.map((block) => {
           if (block.id !== selectedBlockId) return block;
-
           const nextItems = [...(block.props.items || [])];
           const currentItem = nextItems[index] || {};
-          const nextItem = {
-            ...currentItem,
-            [pageFieldName]: pageId,
-          };
-
+          const nextItem = { ...currentItem, [pageFieldName]: pageId };
           const urlFieldName = getLinkedUrlFieldName(pageFieldName);
-
           if (urlFieldName) {
             const selectedPage = pages.find((p) => Number(p.id) === pageId);
             nextItem[urlFieldName] = selectedPage
               ? selectedPage.route_path || `/${selectedPage.slug}`
               : "";
           }
-
           nextItems[index] = nextItem;
-
           return {
             ...block,
-            props: {
-              ...block.props,
-              items: nextItems,
-            },
+            props: { ...block.props, items: nextItems },
           };
         }),
       }));
     };
-
     const updateItemCheckboxGroup = (
       index,
       fieldName,
@@ -932,40 +832,27 @@ const AdminPageBuilder = () => {
         ...prev,
         blocks: prev.blocks.map((block) => {
           if (block.id !== selectedBlockId) return block;
-
           const nextItems = [...(block.props.items || [])];
           const currentItem = nextItems[index] || {};
           const currentValues = Array.isArray(currentItem[fieldName])
             ? currentItem[fieldName]
             : [];
-
           const nextValues = checked
             ? [...new Set([...currentValues, optionValue])]
             : currentValues.filter((value) => value !== optionValue);
-
-          nextItems[index] = {
-            ...currentItem,
-            [fieldName]: nextValues,
-          };
-
+          nextItems[index] = { ...currentItem, [fieldName]: nextValues };
           return {
             ...block,
-            props: {
-              ...block.props,
-              items: nextItems,
-            },
+            props: { ...block.props, items: nextItems },
           };
         }),
       }));
     };
-
     const handleLegacyItemImageUpload = async (index, fieldName, file) => {
       if (!file) return;
-
       try {
         setUploadingField(fieldPath);
         setError("");
-
         const result = await uploadImage(file);
         updateArrayItem(index, fieldName, `${API_ORIGIN}${result.url}`);
       } catch (err) {
@@ -974,7 +861,6 @@ const AdminPageBuilder = () => {
         setUploadingField("");
       }
     };
-
     if (field.type === "textarea") {
       return (
         <textarea
@@ -986,7 +872,6 @@ const AdminPageBuilder = () => {
         />
       );
     }
-
     if (field.type === "select") {
       return (
         <select
@@ -1004,7 +889,6 @@ const AdminPageBuilder = () => {
         </select>
       );
     }
-
     if (field.type === "page-select") {
       return (
         <select
@@ -1023,10 +907,8 @@ const AdminPageBuilder = () => {
         </select>
       );
     }
-
     if (field.type === "checkbox-group") {
       const currentValues = Array.isArray(value) ? value : [];
-
       return (
         <div className="builder-checkbox-group">
           {field.options?.map((option) => (
@@ -1052,10 +934,8 @@ const AdminPageBuilder = () => {
         </div>
       );
     }
-
     if (field.type === "image") {
       const previewUrl = resolveMediaUrl(value);
-
       return (
         <div className="builder-image-field">
           <input
@@ -1082,20 +962,17 @@ const AdminPageBuilder = () => {
               }
             />
           </label>
-
-          {uploadingField === fieldPath ? (
+          {uploadingField === fieldPath && (
             <div className="builder-upload-status">Загрузка...</div>
-          ) : null}
-
-          {previewUrl ? (
+          )}
+          {previewUrl && (
             <div className="builder-image-preview">
               <img src={previewUrl} alt={`${field.label} preview`} />
             </div>
-          ) : null}
+          )}
         </div>
       );
     }
-
     return (
       <input
         className="builder-input"
@@ -1109,7 +986,6 @@ const AdminPageBuilder = () => {
   const renderCardsGridItemFieldInput = (item, field) => {
     const value = item.props?.[field.name] ?? "";
     const fieldPath = `cards-grid-item-${item.id}-${field.name}`;
-
     if (field.type === "textarea") {
       return (
         <textarea
@@ -1121,7 +997,6 @@ const AdminPageBuilder = () => {
         />
       );
     }
-
     if (field.type === "select") {
       return (
         <select
@@ -1139,7 +1014,6 @@ const AdminPageBuilder = () => {
         </select>
       );
     }
-
     if (field.type === "page-select") {
       return (
         <select
@@ -1162,10 +1036,8 @@ const AdminPageBuilder = () => {
         </select>
       );
     }
-
     if (field.type === "image") {
       const previewUrl = resolveMediaUrl(value);
-
       return (
         <div className="builder-image-field">
           <input
@@ -1192,20 +1064,17 @@ const AdminPageBuilder = () => {
               }
             />
           </label>
-
-          {uploadingField === fieldPath ? (
+          {uploadingField === fieldPath && (
             <div className="builder-upload-status">Загрузка...</div>
-          ) : null}
-
-          {previewUrl ? (
+          )}
+          {previewUrl && (
             <div className="builder-image-preview">
               <img src={previewUrl} alt={`${field.label} preview`} />
             </div>
-          ) : null}
+          )}
         </div>
       );
     }
-
     return (
       <input
         className="builder-input"
@@ -1218,15 +1087,12 @@ const AdminPageBuilder = () => {
     );
   };
 
-  if (isLoading) {
+  if (isLoading)
     return <div className="builder-empty">Загрузка страницы...</div>;
-  }
-
-  if (error && !page.id) {
+  if (error && !page.id)
     return (
       <div className="builder-empty builder-empty-error">Ошибка: {error}</div>
     );
-  }
 
   return (
     <div className="builder-layout">
@@ -1241,8 +1107,7 @@ const AdminPageBuilder = () => {
             {isAddBlockOpen ? "Закрыть" : "Добавить блок"}
           </button>
         </div>
-
-        {isAddBlockOpen ? (
+        {isAddBlockOpen && (
           <div className="builder-add-block-panel">
             {Object.entries(blockRegistry).map(([type, config]) => (
               <button
@@ -1257,8 +1122,7 @@ const AdminPageBuilder = () => {
               </button>
             ))}
           </div>
-        ) : null}
-
+        )}
         <div className="builder-block-list">
           {page.blocks.map((block, index) => (
             <button
@@ -1304,14 +1168,42 @@ const AdminPageBuilder = () => {
           <span className="builder-canvas-badge">
             {page.title || "Страница"} / {page.slug}
           </span>
-          {isReordering ? (
-            <span className="builder-canvas-status">Сохраняем порядок...</span>
-          ) : null}
-        </div>
 
+          <div className="builder-preview-breakpoints">
+            <button
+              type="button"
+              className={`builder-preview-breakpoint ${previewWidth === 1280 ? "is-active" : ""}`}
+              onClick={() => setPreviewWidth(1280)}
+            >
+              Desktop
+            </button>
+            <button
+              type="button"
+              className={`builder-preview-breakpoint ${previewWidth === 768 ? "is-active" : ""}`}
+              onClick={() => setPreviewWidth(768)}
+            >
+              Tablet
+            </button>
+            <button
+              type="button"
+              className={`builder-preview-breakpoint ${previewWidth === 390 ? "is-active" : ""}`}
+              onClick={() => setPreviewWidth(390)}
+            >
+              Mobile
+            </button>
+          </div>
+
+          {isReordering && (
+            <span className="builder-canvas-status">Сохраняем порядок...</span>
+          )}
+        </div>
         <div className="builder-canvas-scroll">
           <div className="builder-preview-frame">
-            <PageRenderer blocks={page.blocks} />
+            <PreviewFrame
+              blocks={page.blocks}
+              width={previewWidth}
+              minHeight={900}
+            />
           </div>
         </div>
       </section>
@@ -1338,18 +1230,14 @@ const AdminPageBuilder = () => {
             </button>
           </div>
         </div>
-
         {selectedBlock ? (
           <div className="builder-settings-body">
             <p className="builder-settings-type">
               {blockRegistry[selectedBlock.type]?.label || selectedBlock.type}
             </p>
-
-            {error ? <p className="builder-error-text">{error}</p> : null}
-
+            {error && <p className="builder-error-text">{error}</p>}
             {selectedBlockConfig?.fields?.map((field) => {
               const value = getFieldValue(selectedBlock, field.name);
-
               return (
                 <div key={field.name} className="builder-field">
                   <label className="builder-label">{field.label}</label>
@@ -1357,8 +1245,7 @@ const AdminPageBuilder = () => {
                 </div>
               );
             })}
-
-            {selectedBlock?.type === "cardsGrid" ? (
+            {selectedBlock?.type === "cardsGrid" && (
               <div className="builder-array-group">
                 <div className="builder-array-header">
                   <h3>Элементы композиции</h3>
@@ -1377,7 +1264,6 @@ const AdminPageBuilder = () => {
                     )}
                   </div>
                 </div>
-
                 {selectedCardsGridItems.length === 0 ? (
                   <p className="builder-empty-text">
                     Элементы композиции пока не добавлены.
@@ -1387,7 +1273,6 @@ const AdminPageBuilder = () => {
                     const schema = cardsGridItemSchemas[item.item_type];
                     if (!schema) return null;
                     const isExpanded = expandedItems[item.id] ?? false;
-
                     return (
                       <div key={item.id} className="builder-array-card">
                         <div className="builder-array-card-header">
@@ -1426,9 +1311,8 @@ const AdminPageBuilder = () => {
                   })
                 )}
               </div>
-            ) : null}
-
-            {selectedBlockConfig?.hasItemsArray ? (
+            )}
+            {selectedBlockConfig?.hasItemsArray && (
               <div className="builder-array-group">
                 <div className="builder-array-header">
                   <h3>Элементы</h3>
@@ -1438,12 +1322,10 @@ const AdminPageBuilder = () => {
                     onClick={() => {
                       const createItem =
                         selectedBlockConfig?.createItem || (() => ({}));
-
                       setPage((prev) => ({
                         ...prev,
                         blocks: prev.blocks.map((block) => {
                           if (block.id !== selectedBlockId) return block;
-
                           return {
                             ...block,
                             props: {
@@ -1461,7 +1343,6 @@ const AdminPageBuilder = () => {
                     Добавить элемент
                   </button>
                 </div>
-
                 {(selectedBlock.props.items || []).map((item, index) => (
                   <div key={index} className="builder-array-card">
                     <div className="builder-array-card-top">
@@ -1474,7 +1355,6 @@ const AdminPageBuilder = () => {
                             ...prev,
                             blocks: prev.blocks.map((block) => {
                               if (block.id !== selectedBlockId) return block;
-
                               return {
                                 ...block,
                                 props: {
@@ -1491,10 +1371,8 @@ const AdminPageBuilder = () => {
                         Удалить
                       </button>
                     </div>
-
                     {selectedBlockConfig.itemFields?.map((field) => {
                       const value = item?.[field.name] ?? "";
-
                       return (
                         <div
                           key={`${index}-${field.name}`}
@@ -1508,7 +1386,7 @@ const AdminPageBuilder = () => {
                   </div>
                 ))}
               </div>
-            ) : null}
+            )}
           </div>
         ) : (
           <div className="builder-empty">

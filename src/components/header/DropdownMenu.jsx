@@ -8,9 +8,13 @@ const resolveUrl = (item) => {
   return "#";
 };
 
-const DropdownMenu = ({ isOpen, items = [] }) => {
+const DropdownMenu = ({ isOpen, items = [], onMouseEnter, onMouseLeave }) => {
   return (
-    <div className={`dropdown-menu ${isOpen ? "dropdown-open" : ""}`}>
+    <div
+      className={`dropdown-menu ${isOpen ? "dropdown-open" : ""}`}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
       <div className="dropdown-content">
         {items.map((item) => (
           <MenuCard

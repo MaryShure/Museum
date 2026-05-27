@@ -5,6 +5,8 @@ import CmsPage from "./pages/CmsPage";
 import AdminPageBuilder from "./admin/AdminPageBuilder";
 import AdminPagesList from "./admin/AdminPagesList";
 import AdminLayoutSettings from "./admin/AdminLayoutSettings";
+import AdminCalendarPage from "./admin/AdminCalendarPage";
+import AdminBookingsPage from "./admin/AdminBookingsPage";
 
 import PublicLayout from "./layouts/PublicLayout";
 import AdminLayout from "./layouts/AdminLayout";
@@ -23,10 +25,12 @@ function App() {
           <Route path="/:slug" element={<CmsPage />} />
         </Route>
 
-        <Route element={<AdminLayout />}>
-          <Route path="/admin" element={<AdminPagesList />} />
-          <Route path="/admin/:slug" element={<AdminPageBuilder />} />
-          <Route path="/admin/layout" element={<AdminLayoutSettings />} />
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminPagesList />} />
+          <Route path="calendar" element={<AdminCalendarPage />} />
+          <Route path="bookings" element={<AdminBookingsPage />} />
+          <Route path="layout" element={<AdminLayoutSettings />} />
+          <Route path=":slug" element={<AdminPageBuilder />} />
         </Route>
       </Routes>
     </HashRouter>
