@@ -7,6 +7,7 @@ router.post("/", async (req, res) => {
   const {
     public_token,
     telegram_user_id,
+    telegram_username = null,
     customer_name,
     customer_phone,
     comment = "",
@@ -72,15 +73,15 @@ router.post("/", async (req, res) => {
         excursion_type_id,
         excursion_slot_id,
         telegram_user_id,
+        telegram_username,
         customer_name,
         customer_phone,
         people_count,
         comment,
         source,
-        status,
-        telegram_username
-        )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'telegram', 'confirmed', $9)
+        status
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'telegram', 'confirmed')
       RETURNING *
       `,
       [
@@ -88,11 +89,11 @@ router.post("/", async (req, res) => {
         draft.excursion_type_id,
         draft.excursion_slot_id,
         telegram_user_id ?? null,
+        telegram_username ?? null,
         customer_name,
         customer_phone,
         draft.people_count,
         comment,
-        telegram_username ?? null,
       ],
     );
 

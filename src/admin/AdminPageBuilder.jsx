@@ -702,25 +702,57 @@ const AdminPageBuilder = () => {
     }
     if (field.type === "page-multi-select") {
       const currentValues = Array.isArray(value) ? value.map(Number) : [];
+      const maxItems = field.maxSelected ?? 4;
+
       return (
-        <div className="builder-checkbox-group">
-          {pages.map((p) => (
-            <label key={p.id} className="builder-checkbox-option">
-              <input
-                type="checkbox"
-                checked={currentValues.includes(Number(p.id))}
-                onChange={(e) => {
-                  const nextValues = e.target.checked
-                    ? [...new Set([...currentValues, Number(p.id)])]
-                    : currentValues.filter((id) => id !== Number(p.id));
-                  updateBlockProp(field.name, nextValues);
+        <div style={{ display: "grid", gap: "8px" }}>
+          <div style={{ fontSize: "13px", color: "#666" }}>
+            Выбрано {currentValues.length} из {maxItems}
+          </div>
+
+          {pages.map((p) => {
+            const pageId = Number(p.id);
+            const isChecked = currentValues.includes(pageId);
+            const isDisabled = !isChecked && currentValues.length >= maxItems;
+
+            return (
+              <label
+                key={p.id}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  opacity: isDisabled ? 0.5 : 1,
+                  cursor: isDisabled ? "not-allowed" : "pointer",
                 }}
-              />
-              <span>
-                {p.title} ({p.route_path || p.slug})
-              </span>
-            </label>
-          ))}
+              >
+                <input
+                  type="checkbox"
+                  checked={isChecked}
+                  disabled={isDisabled}
+                  onChange={(e) => {
+                    const nextValues = e.target.checked
+                      ? [...new Set([...currentValues, pageId])].slice(
+                          0,
+                          maxItems,
+                        )
+                      : currentValues.filter((id) => id !== pageId);
+
+                    updateBlockProp(field.name, nextValues);
+                  }}
+                />
+                <span>
+                  {p.title} ({p.route_path || p.slug})
+                </span>
+              </label>
+            );
+          })}
+
+          {currentValues.length >= maxItems && (
+            <div style={{ fontSize: "12px", color: "#b42318" }}>
+              Можно выбрать максимум {maxItems} варианта
+            </div>
+          )}
         </div>
       );
     }

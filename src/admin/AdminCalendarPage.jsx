@@ -13,6 +13,11 @@ const getCurrentMonthKey = () => {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 };
 
+const getTodayDateKey = () => {
+  const date = new Date();
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+};
+
 const emptyForm = {
   excursion_type_id: "",
   slot_date: "",
@@ -57,6 +62,28 @@ const formatAdminTime = (value) => {
   return text.slice(0, 5);
 };
 
+const getSlotDateTime = (slotDate, startTime) => {
+  if (!slotDate || !startTime) return null;
+
+  const normalizedDate = String(slotDate).slice(0, 10);
+  const normalizedTime = String(startTime).slice(0, 5);
+
+  const [year, month, day] = normalizedDate.split("-").map(Number);
+  const [hours, minutes] = normalizedTime.split(":").map(Number);
+
+  if (!year || !month || !day || Number.isNaN(hours) || Number.isNaN(minutes)) {
+    return null;
+  }
+
+  return new Date(year, month - 1, day, hours, minutes, 0, 0);
+};
+
+const isPastSlotDateTime = (slotDate, startTime) => {
+  const slotDateTime = getSlotDateTime(slotDate, startTime);
+  if (!slotDateTime) return false;
+  return slotDateTime.getTime() < Date.now();
+};
+
 const AdminCalendarPage = () => {
   const [excursionTypes, setExcursionTypes] = useState([]);
   const [selectedTypeId, setSelectedTypeId] = useState("");
@@ -69,6 +96,8 @@ const AdminCalendarPage = () => {
   const [isSavingType, setIsSavingType] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [error, setError] = useState("");
+
+  const todayDateKey = useMemo(() => getTodayDateKey(), []);
 
   const loadData = async (typeId, month) => {
     try {
@@ -165,6 +194,16 @@ const AdminCalendarPage = () => {
 
   const handleCreate = async (e) => {
     e.preventDefault();
+
+    if (!form.slot_date || !form.start_time) {
+      setError("Укажи дату и время слота.");
+      return;
+    }
+
+    if (isPastSlotDateTime(form.slot_date, form.start_time)) {
+      setError("Нельзя создать слот на прошедшие дату и время.");
+      return;
+    }
 
     try {
       setIsSaving(true);
@@ -383,6 +422,7 @@ const AdminCalendarPage = () => {
                   className="admin-input"
                   type="date"
                   value={form.slot_date}
+                  min={todayDateKey}
                   onChange={(e) =>
                     setForm((prev) => ({ ...prev, slot_date: e.target.value }))
                   }
@@ -446,6 +486,12 @@ const AdminCalendarPage = () => {
                   <option value="closed">closed</option>
                   <option value="cancelled">cancelled</option>
                 </select>
+              </div>
+
+              <div className="admin-field admin-field-full">
+                <p className="admin-card-subtitle">
+                  Нельзя создать слот на прошедшие дату и время.
+                </p>
               </div>
 
               <div className="admin-field admin-field-full">

@@ -11,12 +11,14 @@ async function handleResponse(response) {
 }
 
 export async function getPages() {
-  const response = await fetch(`${API_BASE}/pages`);
+  const response = await fetch(`${API_BASE}/pages`, { credentials: "include" });
   return handleResponse(response);
 }
 
 export async function getPageBySlug(slug) {
-  const response = await fetch(`${API_BASE}/pages/${slug}`);
+  const response = await fetch(`${API_BASE}/pages/${slug}`, {
+    credentials: "include",
+  });
   return handleResponse(response);
 }
 
@@ -27,6 +29,7 @@ export async function createPage(payload) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(payload),
+    credentials: "include",
   });
 
   return handleResponse(response);
@@ -39,6 +42,7 @@ export async function updatePage(id, payload) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(payload),
+    credentials: "include",
   });
 
   return handleResponse(response);
@@ -47,6 +51,7 @@ export async function updatePage(id, payload) {
 export async function deletePage(id) {
   const response = await fetch(`${API_BASE}/pages/${id}`, {
     method: "DELETE",
+    credentials: "include",
   });
 
   return handleResponse(response);
@@ -59,6 +64,7 @@ export async function createBlock(payload) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(payload),
+    credentials: "include",
   });
 
   return handleResponse(response);
@@ -71,6 +77,7 @@ export async function updateBlock(id, payload) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(payload),
+    credentials: "include",
   });
 
   return handleResponse(response);
@@ -79,6 +86,7 @@ export async function updateBlock(id, payload) {
 export async function deleteBlock(id) {
   const response = await fetch(`${API_BASE}/blocks/${id}`, {
     method: "DELETE",
+    credentials: "include",
   });
 
   return handleResponse(response);
@@ -91,13 +99,16 @@ export async function uploadImage(file) {
   const response = await fetch(`${API_BASE}/upload`, {
     method: "POST",
     body: formData,
+    credentials: "include",
   });
 
   return handleResponse(response);
 }
 
 export async function getCardsGridItems(blockId) {
-  const response = await fetch(`${API_BASE}/blocks/${blockId}/items`);
+  const response = await fetch(`${API_BASE}/blocks/${blockId}/items`, {
+    credentials: "include",
+  });
   return handleResponse(response);
 }
 
@@ -108,6 +119,7 @@ export async function createCardsGridItem(blockId, payload) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(payload),
+    credentials: "include",
   });
 
   return handleResponse(response);
@@ -122,6 +134,7 @@ export async function updateCardsGridItem(blockId, itemId, payload) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(payload),
+      credentials: "include",
     },
   );
 
@@ -133,6 +146,7 @@ export async function deleteCardsGridItem(blockId, itemId) {
     `${API_BASE}/blocks/${blockId}/items/${itemId}`,
     {
       method: "DELETE",
+      credentials: "include",
     },
   );
 

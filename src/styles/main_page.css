@@ -91,9 +91,13 @@
   gap: 40px;
 }
 
+.inner-block-grid > * {
+  height: 300px;
+}
+
 .block-four-img-2 {
   width: 100%;
-  max-height: 270px;
+  max-height: 300px;
   object-fit: cover;
   display: block;
   border-radius: 40px;

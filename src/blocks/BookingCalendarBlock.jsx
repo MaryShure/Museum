@@ -56,10 +56,35 @@ const formatHumanDate = (value) => {
   });
 };
 
+const getSlotDateTime = (slot) => {
+  const rawDate = String(slot.slot_date || slot.slotdate || "").slice(0, 10);
+  const rawTime = String(slot.start_time || slot.starttime || "").slice(0, 5);
+
+  if (!rawDate || !rawTime) return null;
+
+  const [year, month, day] = rawDate.split("-").map(Number);
+  const [hours, minutes] = rawTime.split(":").map(Number);
+
+  if (!year || !month || !day || Number.isNaN(hours) || Number.isNaN(minutes)) {
+    return null;
+  }
+
+  return new Date(year, month - 1, day, hours, minutes, 0, 0);
+};
+
+const isSlotInPast = (slot) => {
+  const slotDateTime = getSlotDateTime(slot);
+  if (!slotDateTime) return false;
+  return slotDateTime.getTime() < Date.now();
+};
+
 const isSlotBookable = (slot) => {
   const capacity = Number(slot.capacity) || 0;
-  const bookedCount = Number(slot.booked_count) || 0;
-  return slot.status === "available" && bookedCount < capacity;
+  const bookedCount = Number(slot.booked_count ?? slot.bookedcount) || 0;
+
+  return (
+    slot.status === "available" && bookedCount < capacity && !isSlotInPast(slot)
+  );
 };
 
 const buildCalendarDays = (currentMonth, slotsByDate) => {
@@ -189,7 +214,7 @@ const BookingCalendarBlock = ({ props = {} }) => {
 
   const slotsByDate = useMemo(() => {
     return slots.reduce((acc, slot) => {
-      const key = String(slot.slot_date).slice(0, 10);
+      const key = String(slot.slot_date || slot.slotdate).slice(0, 10);
 
       if (!acc[key]) {
         acc[key] = [];
@@ -215,6 +240,19 @@ const BookingCalendarBlock = ({ props = {} }) => {
       (item) => String(item.id) === String(selectedExcursionTypeId),
     );
   }, [excursionTypes, selectedExcursionTypeId]);
+
+  useEffect(() => {
+    if (!selectedSlotId) return;
+
+    const isStillAvailable = selectedDateSlots.some(
+      (slot) => String(slot.id) === String(selectedSlotId),
+    );
+
+    if (!isStillAvailable) {
+      setSelectedSlotId(null);
+      setShowManualForm(false);
+    }
+  }, [selectedSlotId, selectedDateSlots]);
 
   const handleContinueTelegram = async () => {
     if (!selectedSlotId || !selectedExcursionTypeId) return;
@@ -439,7 +477,7 @@ const BookingCalendarBlock = ({ props = {} }) => {
                       .join(" ")}
                     onClick={() => setSelectedSlotId(slot.id)}
                   >
-                    {String(slot.start_time).slice(0, 5)}
+                    {String(slot.start_time || slot.starttime).slice(0, 5)}
                   </button>
                 ))
               ) : (

@@ -13,12 +13,45 @@ import {
 } from "../services/validators.js";
 import { ensureSession, STEPS } from "../utils/session.js";
 
+function getPhoneKeyboard() {
+  return Markup.keyboard([
+    [Markup.button.contactRequest("Поделиться номером")],
+    ["Отмена"],
+  ])
+    .resize()
+    .oneTime();
+}
+
 export function registerTextHandler(bot) {
+  bot.on("contact", async (ctx) => {
+    const session = ensureSession(ctx);
+
+    if (session.step !== STEPS.AWAITING_PHONE) {
+      await ctx.reply(getUnknownStateMessage(), Markup.removeKeyboard());
+      return;
+    }
+
+    const contact = ctx.message.contact;
+    const phone = contact?.phone_number;
+
+    if (!phone) {
+      await ctx.reply(
+        "Не удалось получить номер телефона. Попробуйте отправить его текстом.",
+      );
+      return;
+    }
+
+    session.customerPhone = normalizePhone(phone);
+    session.step = STEPS.AWAITING_COMMENT;
+
+    await ctx.reply(getAskCommentMessage(), Markup.removeKeyboard());
+  });
+
   bot.on("text", async (ctx) => {
     const session = ensureSession(ctx);
     const text = ctx.message.text.trim();
 
-    if (text === "/cancel") {
+    if (text === "/cancel" || text.toLowerCase() === "отмена") {
       return;
     }
 
@@ -31,14 +64,15 @@ export function registerTextHandler(bot) {
       session.customerName = text;
       session.step = STEPS.AWAITING_PHONE;
 
-      await ctx.reply(getAskPhoneMessage(text));
+      await ctx.reply(getAskPhoneMessage(text), getPhoneKeyboard());
       return;
     }
 
     if (session.step === STEPS.AWAITING_PHONE) {
       if (!isValidPhone(text)) {
         await ctx.reply(
-          "Пожалуйста, отправьте корректный номер телефона в формате +375... или с кодом оператора.",
+          "Пожалуйста, отправьте корректный номер телефона в формате +375... или нажмите кнопку «Поделиться номером».",
+          getPhoneKeyboard(),
         );
         return;
       }
@@ -46,7 +80,7 @@ export function registerTextHandler(bot) {
       session.customerPhone = normalizePhone(text);
       session.step = STEPS.AWAITING_COMMENT;
 
-      await ctx.reply(getAskCommentMessage());
+      await ctx.reply(getAskCommentMessage(), Markup.removeKeyboard());
       return;
     }
 

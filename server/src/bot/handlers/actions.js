@@ -3,7 +3,6 @@ import { createBooking } from "../services/api.js";
 import {
   getAskNameMessage,
   getCancelledMessage,
-  getFinalConfirmationMessage,
   getSuccessMessage,
   getUnknownStateMessage,
 } from "../services/messages.js";
@@ -47,7 +46,7 @@ export function registerActionHandler(bot) {
     try {
       const result = await createBooking({
         public_token: session.bookingDraft.public_token,
-        telegram_user_id: ctx.from.id,
+        telegram_user_id: ctx.from?.id ?? null,
         customer_name: session.customerName,
         customer_phone: session.customerPhone,
         comment: session.comment || "",

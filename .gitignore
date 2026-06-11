@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Telegram bot tokens, локальные настройки
+.env
+server/.env
+server/bot/.env
+server/bot/config.js

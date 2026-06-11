@@ -2,6 +2,22 @@ function formatTime(value) {
   return String(value || "").slice(0, 5);
 }
 
+function formatDate(value) {
+  if (!value) return "—";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return String(value).slice(0, 10);
+  }
+
+  return date.toLocaleDateString("ru-RU", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
 export function getWelcomeWithoutTokenMessage() {
   return [
     "Здравствуйте!",
@@ -15,7 +31,7 @@ export function getDraftSummaryMessage(draft) {
   return [
     "Я нашёл вашу бронь:",
     `Экскурсия: ${draft.excursion_title}`,
-    `Дата: ${draft.slot_date}`,
+    `Дата: ${formatDate(draft.slot_date)}`,
     `Время: ${formatTime(draft.start_time)}`,
     `Количество человек: ${draft.people_count}`,
     "",
@@ -49,7 +65,7 @@ export function getFinalConfirmationMessage(session) {
   return [
     "Проверьте данные перед подтверждением:",
     `Экскурсия: ${draft.excursion_title}`,
-    `Дата: ${draft.slot_date}`,
+    `Дата: ${formatDate(draft.slot_date)}`,
     `Время: ${formatTime(draft.start_time)}`,
     `Количество человек: ${draft.people_count}`,
     `Имя: ${session.customerName}`,
@@ -63,10 +79,8 @@ export function getFinalConfirmationMessage(session) {
 export function getSuccessMessage(result) {
   return [
     "Спасибо, заявка оформлена.",
-    `Дата: ${result.slot_date}`,
+    `Дата: ${formatDate(result.slot_date)}`,
     `Время: ${formatTime(result.start_time)}`,
-    "",
-    "Мы получили вашу заявку и свяжемся с вами для подтверждения.",
   ].join("\n");
 }
 
